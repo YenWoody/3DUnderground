@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- 
+        Html metadata
+        charset: utf-8 -> vietnamese
+     -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+
+    <!-- 
+        title = Name + version
+        version = month + day (2021)
+     -->
+    <title>VNU Hòa Lạc 1125.1</title>
+
+    <link href="style.css" rel="stylesheet" />
+    <!-- 
+        import js and css
+        cesiumjs: Open source 3D visualization for the web
+        Sandcastle: add toolbar % button for cesiumjs
+        jquery: HTML DOM tree traversal and manipulation & Ajax
+        datatables: a plug-in for the jQuery Javascript library for display table from data
+        turf: A modular geospatial engine written in JavaScript
+     -->
+    <!-- Install cesium v1.86 -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/widgets.css"
+        rel="stylesheet" />
+    <!-- Install Sandcastle v1.85 -->
+    <script src="/Sandcastle-header.js"></script>
+    <link href="/bucket.css" rel="stylesheet" />
+    <link href="/CesiumSandcastle.css" rel="stylesheet" />
+    <!-- Instal FontAwesome-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+    <!-- Install jquery v3.6.0 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- Install Datatable v1.11.3 https://cdn.datatables.net/ -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+    <!-- Install turf: 6.5@newest -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+</head>
+
+<body class="sandcastle-loading" data-sandcastle-bucket="bucket-requirejs.html">
+    <!-- 
+        * contain Cesium.Viewer
+     -->
+    <div id="cesiumContainer" class="fullSize"></div>
+
+    <!-- 
+        * Loading Cesium.Viewer screen
+    -->
+    <div id="loadingOverlay">
+        <h1>Đang tải...</h1>
+    </div>
+    <!-- 
+        * contain layer list
+     -->
+    <div id="toolbar" class="style-1">
+        <div class="force-overflow">
+            <table class="table-layer-order">
+                <tbody data-bind="foreach: layers">
+                    <tr
+                        data-bind="visible:!_isBaseLayer, css: { up: $parent.upLayer === $data, down: $parent.downLayer === $data }">
+                        <td><input type="checkbox" data-bind="checked: show"></td>
+                        <td>
+                            <span data-bind="text: name, visible: !$parent.isSelectableLayer($data)"></span>
+                            <select
+                                data-bind="visible: $parent.isSelectableLayer($data), options: $parent.baseLayers, optionsText: 'name', value: $parent.selectedLayer"></select>
+                        </td>
+                        <td id="range">
+                            <input id="range" type="range" min="0" max="1" step="0.01"
+                                data-bind="value: alpha, valueUpdate: 'input'">
+                        </td>
+                        <td>
+                            <button type="button" class="cesium-button"
+                                data-bind="click: function() { $parent.raise($data, $index()); }, visible: $parent.canRaise($index())">
+                                ▲
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="cesium-button"
+                                data-bind="click: function() { $parent.lower($data, $index()); }, visible: $parent.canLower($index())">
+                                ▼
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table-layer-list">
+                <tbody data-bind="foreach: layers3d">
+                    <tr data-bind="css: { up: $parent.upLayer === $data, down: $parent.downLayer === $data }">
+                        <td><input type="checkbox" data-bind="checked: show"></td>
+                        <td>
+                            <span data-bind="text: name, visible: !$parent.isSelectableLayer($data)"></span>
+                            <select
+                                data-bind="visible: $parent.isSelectableLayer($data), options: $parent.baseLayers, optionsText: 'name', value: $parent.selectedLayer">
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- 
+        * switch toggle enable/disable location tracking. 
+        * Default: off
+     -->
+    <div id="showtoggle" class="on"></div>
+    <button id="switch" class="off"></button>
+    <div class="toggle">
+        <div class="dong1">
+            <div id="switch1" class="off"><i class="fas fa-layer-group fa-lg"></i></div>
+            <p id="text1">Lớp layer </p>
+        </div>
+        <div class="dong1">
+            <div id="congcu" class="off"><i class="fas fa-map-marked fa-lg"></i></div>
+            <p id="text1">Tra cứu thửa đất</p>
+        </div>
+        <div class="dong1">
+            <div id="thongtin" class="off"><i class="fas fa-search-location fa-lg"></i></div>
+            <p id="text1"> Thông tin </p>
+        </div>
+        <div class="dong1">
+            <div id="dodientich" class="off"><i class="fas fa-pencil-ruler fa-lg"></i></div>
+            <p id="text1">Đo diện tích</p>
+        </div>
+    </div>
+
+
+    <!-- 
+        * Display datatable of "Thua Dat"
+    -->
+    <table id="dulieu" class="display" style="width:100%; display: none">
+        <thead>
+            <tr id="tieude">
+                <th>Mã thửa</th>
+                <th>Tờ bản đồ</th>
+                <th>Thửa</th>
+                <th>DT_SMK</th>
+                <th>CSD_SMK</th>
+                <th>Loại đất</th>
+                <th>Mã tách thửa</th>
+                <th>Chủ kiểm đếm</th>
+                <th>Diện tích kiểm đếm</th>
+                <th>Quyết định phê duyệt</th>
+                <th>Thông tin chi trả</th>
+                <th>Thông tin chế độ hỗ trợ</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+    </table>
+</body>
+
+<script id="cesium_sandcastle_script">
+    /**
+     * * overlay & on/off map layers: terrain, satellite basemap, uav imagery basemap, esri map services, 3D model from ion
+     * * measurment tool: length, area
+     * * get list "Thua dat" behide "Quy hoach"
+     * * Tracking location
+     */
+    function startup(Cesium) {
+        'use strict';
+        // Token
+        Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5MzdmNWU4OC03NjQ4LTQxNjctYmJjMS0wZDc2YTY4YTlkNzIiLCJpZCI6NTE1NzgsImlhdCI6MTYxODIxNTE2N30.FBswRxryJb35_DJXCxtsZWXSAgLuMdICx0JYCmo8Oqw";
+        // end token
+
+        /**
+         * * Cesium.Camera: Vị trí mặc định của nút home
+         * !https://cesium.com/learn/cesiumjs/ref-doc/Camera.html
+         * Rectangle : một biến thể hiện vùng chiếu tạo thành 1 khung hình chũ nhật, có 4 giá trị, kinh độ tây, vĩ độ nam, kinh độ đông, vĩ độ bắc 
+         * DEFAULT_VIEW_RECTANGLE: Hình chữ nhật mặc định mà máy ảnh sẽ xem khi tạo
+         * DEFAULT_VIEW_FACTOR: Góc nghiêng của camera (0 - PI/4 ~ 0 - 90 độ).
+         * TODO: DEFAULT_VIEW_FACTOR = init viewer VIEW_FACTOR
+         */
+        const extent = Cesium.Rectangle.fromDegrees(105.475994, 20.982835, 105.539714, 21.040837);
+        Cesium.Camera.DEFAULT_VIEW_RECTANGLE = extent;
+        Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
+        // set Cesium.Camera
+
+        /**
+         * * Cesium.Viewer: init map structure = 3D globe, default buttons, time slider
+         * @param geocoder ghi đè search -> tìm kiếm các khu vực trong quy hoạch tổng thể 878
+         * @terrainProvider terrain Cesium 
+         * @imageryProviderViewModels The array of ProviderViewModel instances to use for imagery.
+         * @terrainProviderViewModels The array of ProviderViewModel instances to use for terrain.
+         * !https://cesium.com/learn/cesiumjs/ref-doc/BaseLayerPickerViewModel.html
+         */
+        const viewer = new Cesium.Viewer("cesiumContainer", {
+            geocoder: new quyHoachSearch(),
+            // Hiển thị địa hình 3D
+            terrainProvider: Cesium.createWorldTerrain(),
+            imageryProviderViewModels: getImageryProviderArr(),
+            terrainProviderViewModels: getTerrainProviderViewModelsArr(),
+            // Remove “Green Box” that appears when pick something
+            selectionIndicator: false,
+            /** Improving Performance with Explicit Rendering
+             * !https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance/
+            */
+            requestRenderMode: true,
+        });
+        // end init Viewer
+
+
+        /**
+        * * camera.flyTo: fly to default location
+        * * Vị trí hiển thị mặc định khi load trang  
+        * @param: destination Cartesian3(x, y, z); z = 1/z.value (tỉ lệ bản đồ)
+        * @param: orientation.heading 
+        * @param: orientation.pitch 
+        * TODO: change to flyHome to reduce config
+        */
+        viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(105.49858663568935, 20.955671067069048, 10000),
+            orientation: {
+                heading: Cesium.Math.toRadians(0.0),
+                pitch: Cesium.Math.toRadians(-60.0),
+            }
+        });
+        // end fly to default location
+        $(".cesium-navigation-help").hide();
+        /**
+         *  Mobile device version
+         * 
+         * */
+
+        $(document).ready(function () {
+            var showtoggle = 'on';
+            $('div#showtoggle').click(function () { switchLights() });
+            function switchLights() {
+                if (showtoggle === 'on') {
+                    $('div#showtoggle').addClass('off');
+                    showtoggle = 'off';
+                    $("div.toggle").toggle();
+                } else {
+                    $('div#showtoggle').removeClass('off');
+                    showtoggle = 'on';
+                    $("div.toggle").toggle();
+                }
+            }
+        });
+        $(document).ready(function () {
+            var bando = 'off';
+            $('div#switch1').click(function () { switchLights() });
+            function switchLights() {
+                if (bando === 'on') {
+                    $('div#switch1').addClass('off');
+                    bando = 'off';
+                    $("div.style-1").toggle();
+                } else {
+                    $('div#switch1').removeClass('off');
+                    bando = 'on';
+                    $("div.style-1").toggle();
+                }
+            }
+        });
+        $(document).ready(function () {
+            var congcu = 'off';
+            $('div#congcu').click(function () { switchLights() });
+            function switchLights() {
+                if (congcu === 'on') {
+                    $('div#congcu').addClass('off');
+                    congcu = 'off';
+                    viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                    $("div#dulieu_wrapper").hide();
+
+                } else {
+                    $('div#congcu').removeClass('off');
+                    congcu = 'on';
+                    viewer.screenSpaceEventHandler.setInputAction(function (movement) {
+                        onLeftClick(movement)
+                    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                }
+            }
+        });
+        $(document).ready(function () {
+            var thongtin = 'off';
+            $('div#thongtin').click(function () { switchLights() });
+            function switchLights() {
+                if (thongtin === 'on') {
+                    $('div#thongtin').addClass('off');
+                    thongtin = 'off';
+                    viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                    $("div.cesium-infoBox.cesium-infoBox-visible").hide();
+                } else {
+                    $('div#thongtin').removeClass('off');
+                    thongtin = 'on';
+                    $("div.cesium-infoBox.cesium-infoBox-visible").show();
+                    viewer.screenSpaceEventHandler.setInputAction(function (movement1) {
+                        clickchuottrai(movement1)
+                    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                }
+            }
+        });
+        $(document).ready(function () {
+            var dodientich = 'off';
+            $('div#dodientich').click(function () { switchLights() });
+            function switchLights() {
+                if (dodientich === 'on') {
+                    $('div#dodientich').addClass('off');
+                    dodientich = 'off';
+                    if (activeShapePoints.length > 2) {
+                        var turfResult = areaMeasurement(activeShapePoints);
+                        drawLabel(Cesium.Cartesian3.fromDegrees(turfResult.centroid[0], turfResult.centroid[1]), turfResult.area + " m2");
+                    }
+                    viewer.entities.remove(floatingPoint);
+                    floatingPoint = undefined;
+                    activeShape = undefined;
+                    viewer.entities.remove(point);
+                    viewer.entities.remove(shape);
+                    viewer.entities.remove(label);
+                    viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                } else {
+                    $('div#dodientich').removeClass('off');
+                    dodientich = 'on';
+                    viewer.entities.remove(point);
+                    viewer.entities.remove(shape);
+                    viewer.entities.remove(label);
+                    var handler = viewer.screenSpaceEventHandler;
+                    handler.setInputAction(function (event) {
+                        leftClick(event)
+                    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                    handler.setInputAction(function () {
+                        rightClick();
+                    }, Cesium.ScreenSpaceEventType.PINCH_START);
+                }
+            }
+
+        });
+        // End Mobile device
+
+        // End Edit content of navigationHelpButton
+        let highlight = null;
+        let vienhighlight = null;
+        let highlightdc = null;
+        // Remove Double Click trackedEntity
+        viewer.screenSpaceEventHandler.setInputAction(function (movement) {
+            viewer.trackedEntity = undefined;
+        }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+        /////
+        // Highlight Feature and show Info 
+
+        /**
+         * *click event handling : Khi click chuột trái ra sự kiện --> dữ liệu vào movement rồi gửi về viewer xác định tọa độ của con trỏ theo Cesium.Cartesian2 object với giá trị x,y trên không gian màn hình--> điểm chọn truyền xuyên qua các features--> Từ giá trị đó để làm input xác định điểm đó thuộc feature nào và tọa độ của giao điểm --> nếu không có giao điểm thì in  No features picked , nếu có thì in số lượng feature giao với điểm chọn và in tên của feature đầu tiên
+         * !https://cesium.com/learn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
+         * @param screenSpaceEventHandler : Nhận các sự kiện xảy ra trong không gian màn hình
+         * !https://cesium.com/learn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html#setInputAction
+         * * setInputAction : Set a function to be executed on an input event.
+         * @return A promise that resolves to an array of features intersected by the pick ray. 
+         */
+
+
+        function clickchuottrai(movement1) {
+            const pickedFeature = viewer.scene.pick(movement1.position);
+            if (Cesium.defined(pickedFeature)) {
+                if (pickedFeature instanceof Cesium.Cesium3DTileFeature) { return; }
+                else {
+                    if (pickedFeature.primitive && pickedFeature.id.name === 'Video') {
+                        viewer.selectedEntity = new Cesium.Entity({
+                            name: pickedFeature.id._id,
+                            description: pickedFeature.id._description,
+                        });
+                    }
+                    else {
+                        var pickRay = viewer.camera.getPickRay(movement1.position);
+                        var featuresPromise = viewer.imageryLayers.pickImageryLayerFeatures(pickRay, viewer.scene);
+                        Cesium.when(featuresPromise, function (features) {
+                            if (features.length > 0) {
+                                if (features[0].data.layerName === "vnuhoalac.sde.qh878") {
+                                    viewer.selectedEntity = new Cesium.Entity({
+                                        id: `Thông tin ${features[0].properties.qh_tenda} `,
+                                        description: `${features[0].description.replace('qh_tenda', 'Tên dự án').replace('da_ma', 'Mã dự án').replace('qh_ma', 'Mã quy hoạch').replace('qh_dt_dapk', 'Diện tích').replace('dtsan', 'Diện tích sàn').replace('so_tang_cp', 'Số tầng').replace('da_qh', 'Quy hoạch dự án').replace('qh_datp', 'Dự án thành phần').replace('qh_htkt', 'Tiến độ').replace('qh_ten_dat', 'Tên dự án theo năm').replace('matdosd', 'Mật độ sử dụng').replace('hesosd', 'Hệ số sử dụng').replace('sodan', 'Số dân').replace('qh_ma_datp', 'Mã dự án thành phần').replace('qh_tenda_n', 'Ten du an')}`
+                                    });
+                                }
+                                else {
+                                    if (features[0].data.layerName === "Diachinh_2021_hoalac") {
+                                        viewer.selectedEntity = new Cesium.Entity({
+                                            id: `Thông tin thửa ${features[0].properties.ma_thua} `,
+                                            description: `${features[0].description.replace('ma_thua', 'Mã Thửa').replace('smk_dienti', 'Diện tích').replace('thong_tin_', 'Thông tin chi trả').replace('smk_bd', 'Tờ bản đồ').replace('smk_thua', 'Thửa').replace('smk_loaida', 'Loại đất').replace('gp_tachthu', 'Mã tách thửa').replace('gp_ckd', 'Chủ kiểm đếm').replace('gp_dt', 'Diện tích kiểm đếm').replace('gp_qd', 'Quyết định phê duyệt').replace('gp_hotro', 'Thông tin chế độ hỗ trợ').replace('ghichu', 'Ghi chú').replace('nguon_goc_', 'Nguồn gốc').replace('ma_thua_st', 'Mã Thửa').replace('qh_da', 'Quy hoạch dự án').replace('cd_488', 'Chế độ 488').replace('tdc', 'Tái định cư').replace('tdc_dt', 'Diện tích tái định cư').replace('gp_bbag', 'Số biên bản áp giá').replace('dot_kd', 'Đợt kiểm tra').replace('lo', 'Lô').replace('tdc_qd_1', 'Phê duyệt tái định cư').replace('sqlq', 'Sĩ quan lục quân').replace('tdcchuabgm', 'TDC chưa bàn giao').replace('doi', 'Đội quản lý').replace('smk_csd', 'Chủ sử dụng').replace('gp_bbkd', 'Biên bản kinh doanh').replace('smk_csd', 'Chủ sử dụng')}`
+                                        });
+                                    } else {
+                                        viewer.selectedEntity = new Cesium.Entity({
+                                            id: `Thông tin ${features[0].properties.objectid} `,
+                                            description: `${features[0].description}`
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            else {
+                var pickRay = viewer.camera.getPickRay(movement1.position);
+                var featuresPromise = viewer.imageryLayers.pickImageryLayerFeatures(pickRay, viewer.scene);
+                Cesium.when(featuresPromise, function (features) {
+                    if (features.length > 0) {
+                        viewer.entities.remove(highlight);
+                        viewer.entities.remove(vienhighlight);
+                        // Create a label entity for each feature
+                        highlight = viewer.entities.add({
+                            polygon: {
+                                hierarchy: Cesium.Cartesian3.fromDegreesArray(features[0].data.geometry.rings[0].flat()),
+                                material: Cesium.Color.DEEPSKYBLUE.withAlpha(0.8),
+                            },
+                        });
+                        vienhighlight = viewer.entities.add({
+                            polyline: {
+                                positions: Cesium.Cartesian3.fromDegreesArray(features[0].data.geometry.rings[0].flat()),
+                                width: 5,
+                                material: Cesium.Color.AQUA,
+                                clampToGround: true,
+                            },
+                        });
+                        /**
+                         * Tạo Infobox bằng dữ liệu của lớp features, nếu có nhiều lớp features thì sẽ hiển thị dữ liệu của lớp features đầu tiên
+                         * !https://cesium.com/learn/cesiumjs/ref-doc/Entity.html?classFilter=enti
+                         * @param id : tên của lớp features
+                         * @param description : dữ liệu của lớp features (dạng HTML)
+                        */
+                        if (features[0].data.layerName === "vnuhoalac.sde.qh878") {
+                            viewer.selectedEntity = new Cesium.Entity({
+                                id: `Thông tin ${features[0].properties.qh_tenda} `,
+                                description: `${features[0].description.replace('qh_tenda', 'Tên dự án').replace('da_ma', 'Mã dự án').replace('qh_ma', 'Mã quy hoạch').replace('qh_dt_dapk', 'Diện tích').replace('dtsan', 'Diện tích sàn').replace('so_tang_cp', 'Số tầng').replace('da_qh', 'Quy hoạch dự án').replace('qh_datp', 'Dự án thành phần').replace('qh_htkt', 'Tiến độ').replace('qh_ten_dat', 'Tên dự án theo năm').replace('matdosd', 'Mật độ sử dụng').replace('hesosd', 'Hệ số sử dụng').replace('sodan', 'Số dân').replace('qh_ma_datp', 'Mã dự án thành phần').replace('qh_tenda_n', 'Ten du an')}`
+                            });
+                        }
+                        else {
+                            if (features[0].data.layerName === "Diachinh_2021_hoalac") {
+                                viewer.selectedEntity = new Cesium.Entity({
+                                    id: `Thông tin thửa ${features[0].properties.ma_thua} `,
+                                    description: `${features[0].description.replace('ma_thua', 'Mã Thửa').replace('smk_dienti', 'Diện tích').replace('thong_tin_', 'Thông tin chi trả').replace('smk_bd', 'Tờ bản đồ').replace('smk_thua', 'Thửa').replace('smk_loaida', 'Loại đất').replace('gp_tachthu', 'Mã tách thửa').replace('gp_ckd', 'Chủ kiểm đếm').replace('gp_dt', 'Diện tích kiểm đếm').replace('gp_qd', 'Quyết định phê duyệt').replace('gp_hotro', 'Thông tin chế độ hỗ trợ').replace('ghichu', 'Ghi chú').replace('nguon_goc_', 'Nguồn gốc').replace('ma_thua_st', 'Mã Thửa').replace('qh_da', 'Quy hoạch dự án').replace('cd_488', 'Chế độ 488').replace('tdc', 'Tái định cư').replace('tdc_dt', 'Diện tích tái định cư').replace('gp_bbag', 'Số biên bản áp giá').replace('dot_kd', 'Đợt kiểm tra').replace('lo', 'Lô').replace('tdc_qd_1', 'Phê duyệt tái định cư').replace('sqlq', 'Sĩ quan lục quân').replace('tdcchuabgm', 'TDC chưa bàn giao').replace('doi', 'Đội quản lý').replace('gp_bbkd', 'Biên bản kinh doanh').replace('smk_csd', 'Chủ sử dụng')}`
+                                });
+                            } else {
+                                viewer.selectedEntity = new Cesium.Entity({
+                                    id: `Thông tin ${features[0].properties.objectid} `,
+                                    description: `${features[0].description}`
+                                });
+                            }
+                        }
+                    }
+                    // Xóa Highlight
+                    else {
+                        viewer.entities.remove(highlightdc);
+                        viewer.entities.remove(highlight);
+                        viewer.entities.remove(vienhighlight);
+                        viewer.entities.remove(point);
+                        viewer.entities.remove(shape);
+                        viewer.entities.remove(label);
+                    }
+                });
+            }
+
+        }
+        viewer.screenSpaceEventHandler.setInputAction(function (movement1) {
+            clickchuottrai(movement1)
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+        // End Highlight Feature and show Info
+
+        /** Custom BaseLayerPicker
+         * !https://blog.fireheart.in/a?ID=01200-3a1ea881-af64-4ed1-89e3-f29ac9109cfc
+         * getImageryProviderArr : Khai báo thêm mảng ImagaryProvider (dạng 2D ) 
+         * !https://cesium.com/learn/cesiumjs/ref-doc/ProviderViewModel.html?classFilter=ProviderViewModel
+        */
+        function getImageryProviderArr() {
+            return [
+                new Cesium.ProviderViewModel({
+                    name: 'Satellite',
+                    tooltip: 'Satellite',
+                    iconUrl: 'https://sandcastle.cesium.com/CesiumUnminified/Widgets/Images/ImageryProviders/bingAerial.png',
+                    creationFunction: function () {
+                        return new Cesium.UrlTemplateImageryProvider({
+                            url: "https://mts1.google.com/vt?lyrs=s&x={x}&y={y}&z={z}",
+                        });
+                    }
+                }),
+                new Cesium.ProviderViewModel({
+                    name: 'Wemap',
+                    tooltip: 'Bản đồ Wemap',
+                    iconUrl: 'https://i.ibb.co/566Q12X/wemap.png',
+                    creationFunction: function () {
+                        return new Cesium.OpenStreetMapImageryProvider({
+                            url: "https://vector.wemap.asia/styles/osm-bright/",
+                        });
+                    }
+                }),
+                new Cesium.ProviderViewModel({
+                    name: 'OpenStreetMaps',
+                    tooltip: 'Bản đồ OpenStreetMaps',
+                    iconUrl: 'https://sandcastle.cesium.com/CesiumUnminified/Widgets/Images/ImageryProviders/openStreetMap.png',
+                    creationFunction: function () {
+                        return new Cesium.OpenStreetMapImageryProvider();
+                    }
+                }),
+                new Cesium.ProviderViewModel({
+                    name: 'ESRI National Geographic',
+                    tooltip: 'ESRI National Geographic',
+                    iconUrl: 'https://sandcastle.cesium.com/CesiumUnminified/Widgets/Images/ImageryProviders/esriNationalGeographic.png',
+                    creationFunction: function () {
+                        return new
+                            Cesium.ArcGisMapServerImageryProvider({
+                                url: 'https://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer',
+                            });
+                    }
+                }),
+            ];
+        }
+        /** 
+         * @param getTerrainProviderViewModelsArr : Chức năng chọn bản đồ dạng địa hình hoặc dạng phẳng
+         * !https://cesium.com/learn/cesiumjs/ref-doc/ProviderViewModel.html
+        */
+        function getTerrainProviderViewModelsArr() {
+            return [
+
+                new Cesium.ProviderViewModel({
+                    name: 'No terrain',
+                    tooltip: 'WGS84 standard sphere',
+                    iconUrl: 'https://sandcastle.cesium.com/CesiumUnminified/Widgets/Images/TerrainProviders/Ellipsoid.png',
+                    creationFunction: function () {
+                        return new Cesium.EllipsoidTerrainProvider({
+                            ellipsoid: Cesium.Ellipsoid.WGS84
+                        });
+                    }
+                }),
+                new Cesium.ProviderViewModel({
+                    name: 'Terrain',
+                    tooltip: 'STK online terrain',
+                    iconUrl: 'https://sandcastle.cesium.com/CesiumUnminified/Widgets/Images/TerrainProviders/CesiumWorldTerrain.png',
+                    creationFunction: function () {
+                        return new Cesium.CesiumTerrainProvider({
+                            url: Cesium.IonResource.fromAssetId(1),
+                            requestWaterMask: !0,
+                            requestVertexNormals: !0
+                        });
+                    }
+                })
+            ];
+        }
+        // End Custom BaseLayerPicker
+        // list 2D layers # list 3D layer viewer.scene
+        const imageryLayers = viewer.imageryLayers;
+        /**
+         * * init viewModel: database for layerlist
+         * * layers: data for <tbody data-bind="foreach: layers">
+         * * layers3d: data for <tbody data-bind="foreach: layers3d">
+         * * selectedLayer: tr.td.select => viewer.imageryProvider
+         * * baseLayers: array of basemap selection
+         * * isSelectableLayer(): true|false for baseLayers > 0
+         * * raise(): swap up posion 1 layer
+         * * lower(): swap down posion 1 layer
+         * * canRaise(): check posion of layer in list (check first)
+         * * canLower(): check posion of layer in list (check last)
+         */
+        const viewModel = {
+            layers: [],
+            layers3d: [],
+            baseLayers: [],
+            upLayer: null,
+            downLayer: null,
+            selectedLayer: null,
+            isSelectableLayer: function (layer) {
+                return this.baseLayers.indexOf(layer) >= 0;
+            },
+            raise: function (layer, index) {
+                imageryLayers.raise(layer);
+                viewModel.upLayer = layer;
+                viewModel.downLayer = viewModel.layers[Math.max(0, index - 1)];
+                updateLayerList();
+                window.setTimeout(function () {
+                    viewModel.upLayer = viewModel.downLayer = null;
+                }, 10);
+            },
+            lower: function (layer, index) {
+                imageryLayers.lower(layer);
+                viewModel.upLayer =
+                    viewModel.layers[
+                    Math.min(viewModel.layers.length - 1, index + 1)
+                    ];
+                viewModel.downLayer = layer;
+                updateLayerList();
+                window.setTimeout(function () {
+                    viewModel.upLayer = viewModel.downLayer = null;
+                }, 10);
+            },
+            canRaise: function (layerIndex) {
+                return layerIndex > 0;
+            },
+            canLower: function (layerIndex) {
+                /**
+                 * check to see if the current row is not last item  
+                 * TODO: hardcode basemap is last item in layer[]. Don't display basemap and canLower = layer.length - 2
+                 */
+                return layerIndex >= 0 && layerIndex < imageryLayers.length - 2;
+            },
+        };
+
+        // init viewModel
+        /**
+         * add layers to viewModel
+         * * ArcGisMapServerImageryProvider
+         * ! https://cesium.com/learn/cesiumjs/ref-doc/ArcGisMapServerImageryProvider.html
+         * @params layers string
+         */
+        const baseLayers = viewModel.baseLayers;
+        Cesium.knockout.track(viewModel);
+        function setupLayers() {
+            // Create the additional layers
+            addAdditionalLayerOption(
+                "Quy hoạch Hòa Lạc",
+                new Cesium.ArcGisMapServerImageryProvider({
+                    url:
+                        "https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/vnuhoalac_qh878/MapServer",
+
+                }),
+                0.7,
+                true,
+            );
+            addAdditionalLayerOption(
+                "Địa chính Hòa Lạc",
+                new Cesium.ArcGisMapServerImageryProvider({
+                    url:
+                        "https://gis.fimo.com.vn/arcgis/rest/services//vnuhoalac/mocgioi_diachinh/MapServer",
+                    layers: '1',
+                }),
+                1.0,
+                false,
+            );
+            addAdditionalLayerOption(
+                "UAV imagery",
+                new Cesium.IonImageryProvider({ assetId: 630995 }),
+                1.0,
+                true,
+            );
+            addAdditionalLayerOption(
+                "Dự án đầu tư xây dựng Viện,Trung tâm nghiên cứu khoa học - UAV imagery",
+                new Cesium.IonImageryProvider({ assetId: 663187 }),
+                1.0,
+                true,
+            );
+            addAdditionalLayerOption(
+                "Đại học Việt - Nhật - UAV imagery",
+                new Cesium.IonImageryProvider({ assetId: 674874 }),
+                1.0,
+                true,
+            );
+            addAdditionalLayerOption(
+                "Đại học Khoa Học Tự Nhiên - UAV imagery",
+                new Cesium.IonImageryProvider({ assetId: 674853 }),
+                1.0,
+                true,
+            );
+            addAdditionalLayerOption(
+                "Mốc giới",
+                new Cesium.ArcGisMapServerImageryProvider({
+                    url:
+                        "https://gis.fimo.com.vn/arcgis/rest/services//vnuhoalac/mocgioi_diachinh/MapServer",
+                    layers: '0',
+                }),
+                1,
+                false,
+            );
+            addAdditionalLayerOption(
+                "Khu trung tâm (1:500)",
+                new Cesium.ArcGisMapServerImageryProvider({
+                    url:
+                        "https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/qh_1_500/MapServer",
+                    layers: '0'
+                }),
+                1,
+                false,
+            );
+            addAdditionalLayerOption(
+                "Khu nghiên cứu (1:500)",
+                new Cesium.ArcGisMapServerImageryProvider({
+                    url:
+                        "https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/qh_1_500/MapServer",
+                    layers: '4'
+                }),
+                1,
+                false,
+            );
+            addAdditionalLayerOption(
+                "ĐH Quốc Tế (1:500)",
+                new Cesium.ArcGisMapServerImageryProvider({
+                    url:
+                        "https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/qh_1_500/MapServer",
+                    layers: '1'
+                }),
+                1,
+                false,
+            );
+            addAdditionalLayerOption(
+                "ĐH Công Nghệ (1:500)",
+                new Cesium.ArcGisMapServerImageryProvider({
+                    url:
+                        "https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/qh_1_500/MapServer",
+                    layers: '3'
+                }),
+                1,
+                false,
+            );
+            addAdditionalLayerOption(
+                "ĐH Khoa Học Tự Nhiên (1:500)",
+                new Cesium.ArcGisMapServerImageryProvider({
+                    url:
+                        "https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/qh_1_500/MapServer",
+                    layers: '2'
+                }),
+                1,
+                false,
+            );
+            addAdditionalLayerOption(
+                "Quy hoạch chung (3D - LOD1)",
+                new Cesium.Cesium3DTileset({
+                    url: Cesium.IonResource.fromAssetId(637845),
+                }),
+                1.0,
+                true,
+                "3d",
+                0
+            );
+            addAdditionalLayerOption(
+                "Khu trung tâm (3D - LOD1)",
+                new Cesium.Cesium3DTileset({
+                    url: Cesium.IonResource.fromAssetId(635971),
+                }),
+                1.0,
+                false,
+                "3d",
+                1
+            );
+            addAdditionalLayerOption(
+                "Khu nghiên cứu (3D - LOD1)",
+                new Cesium.Cesium3DTileset({
+                    url: Cesium.IonResource.fromAssetId(635243),
+                }),
+                1.0,
+                false,
+                "3d",
+                2
+            );
+            addAdditionalLayerOption(
+                "ĐH Quốc Tế (3D - LOD1)",
+                new Cesium.Cesium3DTileset({
+                    url: Cesium.IonResource.fromAssetId(635132),
+                }),
+                1.0,
+                false,
+                "3d",
+                3
+            );
+            addAdditionalLayerOption(
+                "ĐH Công Nghệ (3D - LOD1)",
+                new Cesium.Cesium3DTileset({
+                    url: Cesium.IonResource.fromAssetId(635069),
+                }),
+                1.0,
+                false,
+                "3d",
+                4
+            ); addAdditionalLayerOption(
+                "ĐH Khoa Học Tự Nhiên (3D - LOD1)",
+                new Cesium.Cesium3DTileset({
+                    url: Cesium.IonResource.fromAssetId(637911),
+                }),
+                1.0,
+                false,
+                "3d",
+                5
+            );
+            addAdditionalLayerOption(
+                "Nhà khách (3D - UAV)",
+                new Cesium.Cesium3DTileset({
+                    url: Cesium.IonResource.fromAssetId(620134),
+                }),
+                1.0,
+                false,
+                "3d",
+                6
+            );
+            addAdditionalLayerOption(
+                "Khu 4 (3D - UAV)",
+                new Cesium.Cesium3DTileset({
+                    url: Cesium.IonResource.fromAssetId(624668),
+                }),
+                1.0,
+                false,
+                "3d",
+                7
+            );
+            addAdditionalLayerOption(
+                "Dự án đầu tư xây dựng Viện,Trung tâm nghiên cứu khoa học (3D - UAV)",
+                new Cesium.Cesium3DTileset({
+                    url: Cesium.IonResource.fromAssetId(663188),
+                }),
+                1.0,
+                false,
+                "3d",
+                8
+            );
+        }
+        // end add layers to viewModel
+        $(".cesium-navigationHelpButton-wrapper").click(function leftclick() {
+            $(".cesium-navigation-help").show();
+            // Chuột
+            $("button.cesium-navigation-button.cesium-navigation-button-left.cesium-navigation-button-selected").html('<img src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/NavigationHelp/Mouse.svg" class="cesium-navigation-button-icon" style="width: 25px; height: 25px;">Chuột');
+            $("div.cesium-click-navigation-help").html('<table><tbody><tr><td><img src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/NavigationHelp/MouseLeft.svg" width="48" height="48"></td> <td><div class="cesium-navigation-help-pan">Di chuyển chế độ xem</div><div class="cesium-navigation-help-details">Chuột trái + kéo </div></td></tr><tr><td><img src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/NavigationHelp/MouseRight.svg"width="48" height="48"></td><td><div class="cesium-navigation-help-zoom">Chế độ thu phóng</div> <div class="cesium-navigation-help-details">Chuột phải + kéo, hoặc</div> <div class="cesium-navigation-help-details">con lăn chuột</div></td></tr><tr><td><img src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/NavigationHelp/MouseMiddle.svg" width="48" height="48"></td> <td><div class="cesium-navigation-help-rotate">Xoay góc nhìn</div> <div class= "cesium-navigation-help-details">Nhấp chuột giữa + kéo, hoặc</div ><div class="cesium-navigation-help-details">CTRL + Chuột trái /Chuột phải + kéo</div></td></tr><tr><td><img src="https://img.icons8.com/color/48/000000/tape-measure-sewing.png" width="46" height="46"></td> <td><div class="cesium-navigation-help-rotate">Đo diện tích</div><div class="cesium-navigation-help-details">Giữ SHIFT + Chuột trái, nhấp chuột phải để kết thúc</div></td></tr><tr><td><img src="https://img.icons8.com/office/40/000000/show-property.png" width="42" height="42" style="margin-left: 3px"></td> <td><div class="cesium-navigation-help-pan">Thông tin địa chính</div><div class="cesium-navigation-help-details">ALT + Chuột trái</div></td></tr></tbody></table>'
+            );
+            // Cảm ứng
+            $("button.cesium-navigation-button.cesium-navigation-button-right.cesium-navigation-button-unselected").html('<img src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/NavigationHelp/Touch.svg" class="cesium-navigation-button-icon" style="width: 25px; height: 25px;">Cảm ứng');
+            $("div.cesium-touch-navigation-help").html('<table><tbody><tr><td><img src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/NavigationHelp/TouchDrag.svg" width="70" height="48"></td><td><div class="cesium-navigation-help-pan">Di chuyển chế độ xem</div><div class="cesium-navigation-help-details">Kéo một ngón tay</div></td></tr><tr><td><img src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/NavigationHelp/TouchZoom.svg" width="70" height="48"></td><td><div class="cesium-navigation-help-zoom">Chế độ thu phóng</div><div class="cesium-navigation-help-details">Chụm hai ngón tay</div></td></tr><tr><td><img src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/NavigationHelp/TouchTilt.svg" width="70" height="48"></td><td><div class="cesium-navigation-help-rotate">Chế độ xem nghiêng</div><div class="cesium-navigation-help-details">Kéo hai ngón tay, cùng hướng</div></td></tr><tr><td><img src="https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/NavigationHelp/TouchRotate.svg" width="70" height="48"></td><td><div class="cesium-navigation-help-tilt">Xoay góc nhìn</div><div class="cesium-navigation-help-details">Kéo hai ngón tay, hướng ngược lại</div></td></tr></tbody></table>'
+            );
+        });
+        /**
+         * * Khai báo hàm lựa chọn bản đồ nền
+         */
+        function addBaseLayerOption(name, imageryProvider) {
+            var layer;
+            if (typeof imageryProvider === "undefined") {
+                layer = imageryLayers.get(0);
+                viewModel.selectedLayer = layer;
+            } else {
+                layer = new Cesium.ImageryLayer(imageryProvider);
+            }
+
+            layer.name = name;
+            baseLayers.push(layer);
+        }
+        // end Khai báo hàm lựa chọn bản đồ nền
+        /**
+         * * Add 3D layer to 3D layer list: viewer.scene + viewModel.layers3d
+         * * Add 2D layer to 2D layer list: imageryLayers + 
+         * TODO: hardcode id3d for get last 3D layer 
+         * TODO: 3Dlayer has not updateLayerList()
+         */
+        function addAdditionalLayerOption(name, imageryProvider, alpha, show, type = "2d", id3d = 0) {
+            if (type === "3d") {
+                const layer = viewer.scene.primitives.add(imageryProvider);
+                layer.alpha = Cesium.defaultValue(alpha, 0.5);                  // just 4 fun
+                layer.show = Cesium.defaultValue(show, true);
+                layer.name = name;
+                Cesium.knockout.track(layer, ["alpha", "show", "name"]);
+                layer.readyPromise
+                    .then(function () {
+                        viewModel.layers3d.push(viewer.scene.primitives.get(id3d));
+                    })
+                    .otherwise(function (error) {
+                        console.log(error);
+                    });
+            } else {
+                const layer = imageryLayers.addImageryProvider(imageryProvider);
+                layer.alpha = Cesium.defaultValue(alpha, 0.5);
+                layer.show = Cesium.defaultValue(show, true);
+                layer.name = name;
+                Cesium.knockout.track(layer, ["alpha", "show", "name"]);
+            }
+        }
+        // Khai báo hàm tự cập nhật Layer list
+        function updateLayerList() {
+            var numLayers = imageryLayers.length;
+            viewModel.layers.splice(0, viewModel.layers.length);
+            for (var i = numLayers - 1; i >= 0; --i) {
+                viewModel.layers.push(imageryLayers.get(i));
+            }
+        }
+        setupLayers();
+        updateLayerList();
+        // end function add layers
+        //Bind the viewModel to the DOM elements of the UI that call for it.
+        var toolbar = document.getElementById("toolbar");
+        Cesium.knockout.applyBindings(viewModel, toolbar);
+        Cesium.knockout
+            .getObservable(viewModel, "selectedLayer")
+            .subscribe(function (baseLayer) {
+                //   to the drop-down base layer selector.
+                var activeLayerIndex = 0;
+                var numLayers = viewModel.layers.length;
+                for (var i = 0; i < numLayers; ++i) {
+                    if (viewModel.isSelectableLayer(viewModel.layers[i])) {
+                        activeLayerIndex = i;
+                        break;
+                    }
+                }
+                var activeLayer = viewModel.layers[activeLayerIndex];
+                var show = activeLayer.show;
+                var alpha = activeLayer.alpha;
+                imageryLayers.remove(activeLayer, false);
+                imageryLayers.add(baseLayer, numLayers - activeLayerIndex - 1);
+                baseLayer.show = show;
+                baseLayer.alpha = alpha;
+                updateLayerList();
+            });
+        // Kết Thúc Layer List
+        // Khởi tạo Polygon dataSource
+        const dataSource = new Cesium.CustomDataSource("custom");
+        viewer.dataSources.add(dataSource);
+        const redPolygon = dataSource.entities.add({
+            polygon: {
+                hierarchy: Cesium.Cartesian3.fromDegreesArray([-115.0, 37.0,
+                -115.0, 32.0,
+                -107.0, 33.0,
+                -102.0, 31.0,
+                -102.0, 35.0]),
+                material: Cesium.Color.RED.withAlpha(0.001)
+            }
+        });
+        // Marker Video
+        viewer.infoBox.frame.removeAttribute("sandbox");
+        viewer.infoBox.frame.src = "about:blank";
+        const entity = viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(105.50764560191372, 20.99827768513198, 80),
+            billboard: {
+                image: 'https://img.icons8.com/external-kiranshastry-lineal-color-kiranshastry/64/000000/external-location-pin-news-kiranshastry-lineal-color-kiranshastry.png',
+                width: 64,
+                height: 64,
+                scaleByDistance: new Cesium.NearFarScalar(400, 0.8, 9000, 0.5),
+                translucencyByDistance: new Cesium.NearFarScalar(
+                    12000,
+                    1.0,
+                    14000,
+                    0
+                ),
+
+            },
+            id: 'Video HT1 và HT2',
+            name: 'Video',
+            description: '<iframe width="100%" height="315" src="https://www.youtube.com/embed/iBz1iTqbDNk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+        });
+        const nhakhach = viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(105.51400950521347, 20.99615280172736, 80),
+            billboard: {
+                image: 'https://img.icons8.com/external-kiranshastry-lineal-color-kiranshastry/64/000000/external-location-pin-news-kiranshastry-lineal-color-kiranshastry.png',
+                width: 64,
+                height: 64,
+                scaleByDistance: new Cesium.NearFarScalar(400, 0.8, 9000, 0.5),
+                translucencyByDistance: new Cesium.NearFarScalar(
+                    12000,
+                    1.0,
+                    14000,
+                    0
+                ),
+            },
+            name: 'Video',
+            id: 'Video Nhà khách',
+            description: '<iframe width="100%" height="315" src="https://www.youtube.com/embed/6gCq5HXdQvI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+        });
+        // End Marker Video
+        /** Remove Accents to Query
+         * !https://gist.github.com/hu2di/e80d99051529dbaa7252922baafd40e3
+         * Xóa kí tự đặc biệt Input để truy vấn 
+        */
+        function removeVietnameseTones(str) {
+            str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+            str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+            str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+            str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+            str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+            str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+            str = str.replace(/đ/g, "d");
+            str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+            str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+            str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+            str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+            str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+            str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+            str = str.replace(/Đ/g, "D");
+            str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); // ̀ ́ ̃ ̉ ̣  huyền, sắc, ngã, hỏi, nặng
+            str = str.replace(/\u02C6|\u0306|\u031B/g, ""); // ˆ ̆ ̛  Â, Ê, Ă, Ơ, Ư
+            // Gộp nhiều dấu space thành 1 space
+            str = str.replace(/\s+/g, ' ');
+            // loại bỏ toàn bộ dấu space (nếu có) ở 2 đầu
+            str = str.trim();
+            return str;
+        }
+
+        /**
+         * * quyHoachSearch.prototype.geocode
+         * * input: text in search box
+         * * progress: call arcgis query api with sql: '%${input}%' -> list search results -> click on 1 result -> flyto location + highlight boundary
+         * * output: UI only
+         */
+        // init quyHoachSearch interface
+        function quyHoachSearch() { }
+        /**
+         * * new Cesium.Geocoder(options)
+         * ! https://cesium.com/learn/cesiumjs/ref-doc/Geocoder.html
+         * @param options {geocoderServices, autoComplete, flightDuration}
+         * * input: text in search box
+         * * api: https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/vnuhoalac_qh878/MapServer/0/query
+         */
+        quyHoachSearch.prototype.geocode = function (input) {
+            // api url
+            const endpoint = "https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/vnuhoalac_qh878/MapServer/0/query";
+            /**
+             * new Cesium.Resource(options)
+             * * request builder
+             * ! https://cesium.com/learn/cesiumjs/ref-doc/Resource.html?classFilter=Resource
+             * @param url: api url
+             * @param queryParameters: object
+             * @param templateValues: object: where: qh_tenda LIKE '%{x}%'
+             * ! queryParameters
+             * @param where             : kiểm tra có qh_tenda (tên dự án) chứa đoạn ký tự {input} vị trí bất kỳ
+             * @param outFields         : return object (results) has all of fields in https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/vnuhoalac_qh878/MapServer/0
+             * @param returnGeometry    : return object (results) has / has't geometry field
+             * @param resultRecordCount : max array lengt of results.features
+             * @param f                 : format
+             * @return url string (example: xxxxxx)
+             */
+            const resource = new Cesium.Resource({
+                url: endpoint,
+                queryParameters: {
+                    where: `UPPER(qh_tenda_n) LIKE UPPER('%${removeVietnameseTones(`${input}`)}%')`,
+                    outFields: "*",
+                    returnGeometry: true,
+                    resultRecordCount: 10,
+                    f: "geojson",
+                },
+
+            });
+            // Truy vấn mã thửa
+            const mathua = "https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/mocgioi_diachinh/MapServer/1/query";
+            const truyvanmt = new Cesium.Resource({
+                url: mathua,
+                queryParameters: {
+                    where: `ma_thua_st LIKE ('%${removeVietnameseTones(`${input}`)}%')`,
+                    outFields: "*",
+                    returnGeometry: true,
+                    resultRecordCount: 10,
+                    f: "geojson",
+                },
+            });
+            /**
+             * Cesium.Resource.fetchJson(options)
+             * ! https://cesium.com/learn/cesiumjs/ref-doc/Resource.html?classFilter=Resource#.fetchJson
+             * @param options = Resource.options
+             * @return a promise that will resolve to the requested data when loaded
+             * * call api: get
+             * * wait server return respone
+             * @return {
+             *  displayName: text
+             *  destination: function change camera posion
+             * }
+             */
+            return resource.fetchJson().then(function (results) {
+                if (results.features.length === 0) {
+                    return truyvanmt.fetchJson().then(function (results1) {
+                        return results1.features.map(function (resultObject) {
+                            return {
+                                displayName: resultObject.properties.ma_thua_st + ', ' + resultObject.properties.smk_csd,
+                                destination: resultObject.geometry.coordinates[0],
+                            };
+
+                        });
+                    });
+                }
+                else {
+                    return results.features.map(function (resultObject) {
+                        return {
+                            displayName: resultObject.properties.qh_ma + ', ' + resultObject.properties.qh_tenda,
+                            destination: resultObject.geometry.coordinates[0],
+                        };
+
+                    });
+                }
+            });
+        };
+        /** Hightlight đối tượng được chọn sau tìm kiếm
+         * !https://cesium.com/learn/cesiumjs/ref-doc/Geocoder.html
+         * @param viewer.geocoder.viewModel.destinationFound : Input là tọa độ destination từ đối tượng được chọn của phần tìm kiếm geocode trả vào toado.
+         * !https://cesium.com/learn/cesiumjs/ref-doc/Camera.html
+         * @param  viewer.camera.flyTo Bay về tọa độ được chọn ( INPUT : tọa độ điểm đầu tiên của đối tượng được chọn) 
+         * !https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
+        */
+        viewer.geocoder.viewModel.destinationFound = function flyToDestination(viewModel, toado) {
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(
+                    toado[0][0],
+                    toado[0][1],
+                    400,
+                ),
+            });
+
+            /**
+             * @param  viewer.entities.remove()
+             * Xóa entities theo ID
+            */
+            viewer.entities.remove(highlight);
+            viewer.entities.remove(vienhighlight);
+            /** Vẽ polygon 
+             * !https://sandcastle.cesium.com/?src=Polygon.html
+             * Input : Tọa độ geometry sau khi được làm phẳng của đối tượng được chọn
+             * @param material : Chất liệu (đổ màu cho polygon)
+            */
+            highlight = viewer.entities.add({
+                polygon: {
+                    hierarchy: Cesium.Cartesian3.fromDegreesArray(toado.flat()),
+                    material: Cesium.Color.DEEPSKYBLUE.withAlpha(0.7),
+                },
+            });
+
+            /**
+             * draw polyline in cesium
+             * @param color = Cesium.Color.AQUA
+             * @param clampToGround = true
+             */
+            vienhighlight = viewer.entities.add({
+                polyline: {
+                    positions: Cesium.Cartesian3.fromDegreesArray(toado.flat()),
+                    width: 5,
+                    material: Cesium.Color.AQUA,
+                    clampToGround: true,
+                },
+            });
+        };
+        //End
+        /**
+         * measurement tool
+         * ! draw with: https://sandcastle.cesium.com/?src=Drawing%20on%20Terrain.html
+         * ! caculate with: https://github.com/Turfjs/turf/
+         */
+
+        /**
+         * draw polyline
+         * * start: turn-on toggle measurement tool | ended draw
+         * * off: right click | turn-off toggle measurement tool
+         * @return geometry
+         */
+        let point = null;
+        let shape = null;
+        let label = null;
+        function createPoint(worldPosition) {
+            viewer.entities.remove(point);
+            point = viewer.entities.add({
+                position: worldPosition,
+                point: {
+                    color: Cesium.Color.WHITE,
+                    pixelSize: 5,
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                },
+            });
+            return point;
+        }
+        function drawShape(positionData) {
+            viewer.entities.remove(shape);
+            shape = viewer.entities.add({
+                polygon: {
+                    hierarchy: positionData,
+                    material: new Cesium.ColorMaterialProperty(
+                        Cesium.Color.WHITE.withAlpha(0.7)
+                    ),
+                },
+            });
+            return shape;
+        }
+
+        function drawLabel(position, text) {
+            viewer.entities.remove(label);
+            label = viewer.entities.add({
+                position: position,
+                label: {
+                    text: text,
+                    showBackground: true,
+                    scale: 0.6,
+                    verticalOrigin: Cesium.HorizontalOrigin.CENTER,
+                    // https://community.cesium.com/t/points-labels-stuck-under-terrain/11141/4
+                    pixelOffset: new Cesium.Cartesian2(0.0, -40.0),
+                },
+            });
+            return label;
+        }
+
+        function leftClick(event) {
+            // We use `viewer.scene.pickPosition` here instead of `viewer.camera.pickEllipsoid` so that
+            // we get the correct point when mousing over terrain.
+            var earthPosition = viewer.scene.pickPosition(event.position);
+
+            if (Cesium.defined(earthPosition)) {
+                if (!Cesium.defined(floatingPoint)) {
+                    activeShapePoints = [];
+                    // viewer.entities.removeAll();
+                    floatingPoint = createPoint(earthPosition);
+                    activeShapePoints.push(earthPosition);
+                    var dynamicPositions = new Cesium.CallbackProperty(function () {
+                        return new Cesium.PolygonHierarchy(activeShapePoints);
+                    }, false);
+                    activeShape = drawShape(dynamicPositions);
+                }
+                activeShapePoints.push(earthPosition);
+                createPoint(earthPosition);
+
+                if (activeShapePoints.length > 2) {
+                    var length = lengthMeasurement(activeShapePoints);
+                    drawLabel(earthPosition, length.length + " m");
+                }
+            }
+        }
+
+        function mouseMove(event) {
+            if (Cesium.defined(floatingPoint)) {
+                var newPosition = viewer.scene.pickPosition(event.endPosition);
+                if (Cesium.defined(newPosition)) {
+                    floatingPoint.position.setValue(newPosition);
+                    activeShapePoints.pop();
+                    activeShapePoints.push(newPosition);
+                }
+            }
+        }
+        // Redraw the shape so it's not dynamic and remove the dynamic shape.
+        function rightClick() {
+            if (activeShapePoints.length > 0) {
+                activeShapePoints.pop();
+                // shape = drawShape(activeShapePoints);
+                if (activeShapePoints.length > 2) {
+                    var turfResult = areaMeasurement(activeShapePoints);
+                    drawLabel(Cesium.Cartesian3.fromDegrees(turfResult.centroid[0], turfResult.centroid[1]), turfResult.area + " m2");
+                }
+
+                viewer.entities.remove(floatingPoint);
+                // viewer.entities.remove(activeShape);
+                floatingPoint = undefined;
+                activeShape = undefined;
+                // activeShapePoints = [];
+            }
+        }
+
+        var activeShapePoints = [];
+        var activeShape;
+        var floatingPoint;
+
+        // var handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+        var handler = viewer.screenSpaceEventHandler;
+        handler.setInputAction(function (event) {
+            leftClick(event)
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK, 0);
+
+        handler.setInputAction(function (event) {
+            mouseMove(event)
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+        handler.setInputAction(function (event) {
+            mouseMove(event)
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE, 0);
+
+        handler.setInputAction(function () {
+            rightClick();
+        }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+
+        handler.setInputAction(function () {
+            rightClick();
+        }, Cesium.ScreenSpaceEventType.RIGHT_CLICK, 0);
+
+        // end draw polyline
+
+        /**
+         * geospatial analysis: Area measurement
+         * ! https://github.com/Turfjs/turf/
+         * ! http://turfjs.org/docs/#area
+         * @params geojson [[[long, lat]]]; polygon; first === last
+         * @return number - area in square meters; centroid of polygon for label position
+         */
+        function areaMeasurement(positionData) {
+            var geojson = [];
+
+            positionData.forEach(element => {
+                /**
+                 * Cartesian3(x,y,z) to lat,long
+                 * ! https://stackoverflow.com/questions/28358403/how-to-convert-x-y-z-to-longitude-latitude-altitude-in-cesium
+                 */
+                var cartographic = Cesium.Cartographic.fromCartesian(element);
+                //     'lon ' + Cesium.Math.toDegrees(cartographic.longitude) + ', ' +
+                //     'lat ' + Cesium.Math.toDegrees(cartographic.latitude) + ', ' +
+                //     'alt ' + cartographic.height);
+                geojson.push([Cesium.Math.toDegrees(cartographic.longitude), Cesium.Math.toDegrees(cartographic.latitude)]);
+            });
+            var cartographic = Cesium.Cartographic.fromCartesian(positionData[0]);
+            geojson.push([Cesium.Math.toDegrees(cartographic.longitude), Cesium.Math.toDegrees(cartographic.latitude)]);
+
+            var polygon = turf.polygon([geojson]);
+            var area = parseInt(turf.area(polygon));
+            var centroid = turf.centroid(polygon);
+
+            return {
+                area: area,
+                centroid: centroid.geometry.coordinates
+            }
+        }
+        // end geospatial analysis: Area measurement
+
+        /**
+         * geospatial analysis: Area measurement
+         * ! https://github.com/Turfjs/turf/
+         * ! https://turfjs.org/docs/#length
+         * @params geojson [[[long, lat]]]; line
+         * @params options.unit: string [degrees, radians, miles, or kilometers]
+         * @return number - length of GeoJSON
+         */
+        function lengthMeasurement(positionData) {
+            var geojson = [];
+
+            positionData.forEach(element => {
+                /**
+                 * Cartesian3(x,y,z) to lat,long
+                 * ! https://stackoverflow.com/questions/28358403/how-to-convert-x-y-z-to-longitude-latitude-altitude-in-cesium
+                 */
+                var cartographic = Cesium.Cartographic.fromCartesian(element);
+                //     'lon ' + Cesium.Math.toDegrees(cartographic.longitude) + ', ' +
+                //     'lat ' + Cesium.Math.toDegrees(cartographic.latitude) + ', ' +
+                //     'alt ' + cartographic.height);
+                geojson.push([Cesium.Math.toDegrees(cartographic.longitude), Cesium.Math.toDegrees(cartographic.latitude)]);
+            });
+
+            // var line = turf.lineString([[115, -32], [131, -22], [143, -25], [150, -34]]);
+            var line = turf.lineString(geojson);
+            var length = parseInt(turf.length(line, { units: 'kilometers' }) * 1000);
+
+            return {
+                length: length,
+            }
+        }
+        // end geospatial analysis: length measurement
+
+        // end measurement tool
+
+        //Sandcastle_End
+        /**
+         * toggle-switch: tracking current location (5s) 
+         * ! https://codepen.io/doughensel/pen/pjVxrN
+         * * check tracking status = #switch.class => addClass/removeClass('off')
+         * * change style of button by class css
+         */
+        /** 
+         * ý nghĩa: 
+         * doucument : tài liệu
+         * doucument.ready(): quản lý các sự kiện tương tác giữa ng dùng với trang web , như bên dưới là click và thay đổi trạng thái 
+         * tracking = 'off'  khai báo biến toàn cục, đặt 'off' làm giá trị mặc định 
+         * intervalID : biến đại diện cho id của button
+         * #switch : id của button
+         * $('#switch').click(function () { switchLights() }); : kích hoạt cho button 1 sự kiện click , sau đó sử lý các sự kiện của funtion switchLights()
+         * @pragam tracking === on :kiểm tra biến 'tracking' nếu bằng 'on' 
+         * @return  $('#switch').addClass('off'); thì thực hiện sự hành động addClass ( thêm class = ' off') và gán lại giá trị 'off' cho tracking
+                    tracking = 'off';
+                    
+            clearInterval(intervalID): sau đó tắt sự kiện theo dõi vị trí 
+         */
+        $(document).ready(function () {
+            var tracking = 'off';
+            var intervalID;
+            var currentPoint;
+
+            $('#switch').click(function () { switchLights() });
+            function switchLights() {
+                if (tracking === 'on') {
+                    $('#switch').addClass('off');
+                    tracking = 'off';
+                    /**
+                     * turn off tracking location = clear interval
+                     */
+                    clearInterval(intervalID);
+                    /** 
+                     * ý nghĩa : else , trường hợp khác tức khi đó tracking === 'off' thì thưc hiện
+                     * removeClass('off'): xóa class off trước đó đã tạo ra 
+                     * tracking = 'on' : gán cho tracking giá trị bằng on
+                     * @pagram 
+                    */
+                } else {
+                    $('#switch').removeClass('off');
+                    tracking = 'on';
+                    /**
+                     * turn on tracking location = add interval
+                     * setInterval: sau mỗi 2s hàm setInterval gọi lại funciton showPosition và gán lại cho IntervalID
+                     * showPosition() : hàm chức năng show ra vị trí ngưới dùng hiển thị bằng 1 point
+                     * longitude, latitude : biến lưu giá trị lat long tới chữ số thập phân 
+                     * currentPoint : tạo ra 1 biến chứa Position( lat long vừa lấy được) dưới dạng 1 point (PointGraphics)
+                     * view.camera.FlyTo : di chuyển camera tới vị trí Point tỉ lệ bản đồ 1/10000
+                     * navigator.geolocation: kiểm tra xem trình duyệt đang sử dụng có được phép truy cập vị trí thiết bị  
+                     * -- nếu được thì chạy phương thức getCurrentPosition(showPosition): lấy vị trí và trả về hàm ShowPosition
+                     * -- không thì hiện thông báo 
+                     * if (currentPoint) { viewer.entities.remove(currentPoint);}
+                     * xóa point nếu đã toòn tại trước đó r sau đó mới thêm point truyền vào lat long mới
+                     */
+                    /**
+                     * lần đầu lấy lat long và zoom to
+                     */
+                    function showPosition(position) {
+                        const longitude = position.coords.longitude;
+                        const latitude = position.coords.latitude;
+                        if (currentPoint) {
+                            viewer.entities.remove(currentPoint);
+                        }
+                        currentPoint = viewer.entities.add({
+                            position: Cesium.Cartesian3.fromDegrees(longitude, latitude),
+                            point: new Cesium.PointGraphics({
+                                color: Cesium.Color.DEEPSKYBLUE,
+                                outlineColor: Cesium.Color.WHITE,
+                                outlineWidth: 2,
+                                pixelSize: 15,
+                            }),
+
+                        });
+                        viewer.camera.flyTo({
+                            destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, 500)
+                        });
+                    }
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(showPosition);
+                    } else {
+                        alert("Geolocation is not supported by this browser.");
+                    }
+                    /**
+                     * lần 2 trở đi chỉ cập nhật locaotion, không có Zoom to
+                     */
+                    intervalID = setInterval(function () {
+                        function showPosition(position) {
+                            const longitude = position.coords.longitude;
+                            const latitude = position.coords.latitude;
+                            if (currentPoint) {
+                                viewer.entities.remove(currentPoint);
+                            }
+                            currentPoint = viewer.entities.add({
+                                position: Cesium.Cartesian3.fromDegrees(longitude, latitude),
+                                point: new Cesium.PointGraphics({
+                                    color: Cesium.Color.DEEPSKYBLUE,
+                                    outlineColor: Cesium.Color.WHITE,
+                                    outlineWidth: 2,
+                                    pixelSize: 15,
+                                }),
+                            });
+                        }
+                        if (navigator.geolocation) {
+                            var Location = navigator.geolocation.getCurrentPosition(showPosition);
+                        } else {
+                            alert("Geolocation is not supported by this browser.");
+                        }
+                    }, 2000);
+                }
+            }
+        });
+        ///////////////
+        /**
+            * DiaChinh analysis
+            * * click and select 1 feature in Quy Hoach layer
+            * * spatial query intersect Thua Dat in Dia Chinh layer
+            * * display list of Thua Dat: datatable
+            */
+        /**
+         * *click event handling : Khi click ALT + chuột trái ra sự kiện -->dữ liệu vào movement rồi gửi về viewer xác định tọa độ của con trỏ theo Cesium.Cartesian2 object với giá trị x,y trên không gian màn hình--> điểm chọn truyền xuyên qua các features--> Từ giá trị đó để làm input xác định điểm đó thuộc feature nào và tọa độ của giao điểm --> nếu không có giao điểm thì in  No features picked , nếu có thì in số lượng feature giao với điểm chọn và in tên của feature đầu tiên
+         * !https://cesium.com/learn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html
+         * @param screenSpaceEventHandler : Nhận các sự kiện xảy ra trong không gian màn hình
+         * !https://cesium.com/learn/cesiumjs/ref-doc/ScreenSpaceEventHandler.html#setInputAction
+         * * setInputAction : Set a function to be executed on an input event.
+         * @return A promise that resolves to an array of features intersected by the pick ray. 
+         */
+
+        function onLeftClick(movement) {
+            /**  Xác định tọa độ điểm giao với features
+             * !https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayerCollection.html#pickImageryLayers
+             * @param Camera.getPickRay : To compute a pick ray from a location on the screen: Lấy giao điểm của điểm chọn và features trên màn hình --> movement.position:lấy tọa độ các giao điểm
+            */
+            var pickRay = viewer.camera.getPickRay(movement.position);
+            /** Xác định featurer giao với điểm chọn
+             * ! https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayerCollection.html#pickImageryLayerFeatures
+             * Từ giá trị của pickRay là input cho viewer.imageryLayers.pickImageryLayerFeatures từ đó xác định nếu có giao điểm --> số features giao với điểm chọn , tên feature muốn hiển thị
+             * 
+            */
+            var featuresPromise = viewer.imageryLayers.pickImageryLayerFeatures(pickRay, viewer.scene);
+            if (!Cesium.defined(featuresPromise)) {
+            } else {
+                Cesium.when(featuresPromise, function (features) {
+                    if (features.length > 0) {
+                        var featureqh = features.filter(function (qh) {
+                            return qh.data.layerName === "vnuhoalac.sde.qh878";
+                        });
+                        /**
+                         * if clicked on "Quy hoach" layer => using ajax to call post api for get "thua dat" is intersected
+                         * @params form-data: {geometry of "Quy hoach".feature}
+                         * @return geojson list of "thua dat" features
+                         */
+                        if (featureqh.length > 0) {
+                            /**
+                             * * Fixed missing table header in first time 
+                             * ! https://stackoverflow.com/questions/35632027/datatables-titles-defined-in-columns-not-generating-table-headers
+                             * Datatables is a DOM-manipulating item. You need a binding handler to work with widgets that manipulate the DOM.
+                             * Display table before add data
+                             */
+                            $("#dulieu").show();
+                            /** 
+                             * Highlight feature in Quy hoach layer when query Mã thửa
+                            */
+                            viewer.entities.remove(highlight);
+                            viewer.entities.remove(vienhighlight);
+                            /** Vẽ polygon 
+                             * !https://sandcastle.cesium.com/?src=Polygon.html
+                             * Input : Tọa độ geometry sau khi được làm phẳng của đối tượng được chọn
+                             * @param material : Chất liệu (đổ màu cho polygon)
+                            */
+                            highlight = viewer.entities.add({
+                                polygon: {
+                                    hierarchy: Cesium.Cartesian3.fromDegreesArray(featureqh[0].data.geometry.rings[0].flat()),
+                                    material: Cesium.Color.DEEPSKYBLUE.withAlpha(0.7),
+                                },
+                            });
+
+                            /**
+                             * draw polyline in cesium
+                             * @param color = Cesium.Color.AQUA
+                             * @param clampToGround = true
+                             */
+                            vienhighlight = viewer.entities.add({
+                                polyline: {
+                                    positions: Cesium.Cartesian3.fromDegreesArray(featureqh[0].data.geometry.rings[0].flat()),
+                                    width: 5,
+                                    material: Cesium.Color.AQUA,
+                                    clampToGround: true,
+                                },
+                            });
+                            /**
+                             * ! https://datatables.net/reference/option/ajax
+                             * ! https://api.jquery.com/jQuery.ajax/
+                             */
+                            const table = $('#dulieu').DataTable({
+                                "ajax": {
+                                    "url": "https://gis.fimo.com.vn/arcgis/rest/services/vnuhoalac/mocgioi_diachinh/MapServer/1/query",
+                                    "type": "POST",
+                                    "data": {
+                                        geometryType: 'esriGeometryPolygon',
+                                        geometry: JSON.stringify({ "rings": featureqh[0].data.geometry.rings }),
+                                        outFields: "*",
+                                        inSR: 4326,
+                                        spatialRel: 'esriSpatialRelIntersects',
+                                        f: "geojson",
+                                    },
+                                    "dataSrc": "features",
+                                },
+                                "paging": 'true',
+                                "destroy": 'true',
+                                "searching": 'true',
+                                "processing": 'true',
+                                "dom": '<"toolbar">frtip',
+                                "scrollX": 'true',
+                                "scrollY": "400",
+                                "columns": [
+                                    { data: 'properties.ma_thua' },
+                                    { data: 'properties.smk_bd' },
+                                    { data: 'properties.smk_thua' },
+                                    { data: 'properties.smk_dienti' },
+                                    { data: 'properties.smk_csd' },
+                                    { data: 'properties.smk_loaida' },
+                                    { data: 'properties.gp_tachthu' },
+                                    // { data: 'properties.smk_csd' },
+                                    { data: 'properties.gp_ckd' },
+                                    { data: 'properties.gp_dt' },
+                                    { data: 'properties.gp_qd' },
+                                    { data: 'properties.thong_tin_' },
+                                    { data: 'properties.gp_hotro' },
+                                    { data: 'properties.ghichu' },
+                                ],
+
+                            });
+
+                            $("div.toolbar").html('<button id="close">Đóng</button>');
+                            $('button#close').on('click', function () {
+                                $("div#dulieu_wrapper").hide();
+                            });
+                            /** Highlight thửa đất địa chính
+                             *!https://datatables.net/examples/advanced_init/events_live.html
+                             *!https://datatables.net/reference/api/row().data()
+                             * Input : Sự kiện Click chuột vào class tr của bảng dữ liệu 
+                             * Output : Data của hàng được chọn 
+                             * 
+                            */
+
+                            $(document).ready(function () {
+                                $('#dulieu tbody').off('click', 'tr');
+                                $('#dulieu tbody').on('click', 'tr', function () {
+                                    const data = table.row(this).data();
+                                    /**
+                                     * Fly to Destination
+                                     * !https://cesium.com/learn/cesiumjs/ref-doc/Camera.html
+                                     *@param  viewer.camera.flyTo:  Bay về tọa độ được chọn ( INPUT : data.geometry.coordinates[0]
+                                    */
+                                    viewer.camera.flyTo({
+                                        destination: Cesium.Cartesian3.fromDegrees(
+                                            data.geometry.coordinates[0][0][0],
+                                            data.geometry.coordinates[0][0][1],
+                                            400,
+                                        ),
+                                    });
+                                    viewer.entities.remove(highlightdc);
+                                    /** Vẽ polygon 
+                                    * !https://sandcastle.cesium.com/?src=Polygon.html
+                                    * Input : Tọa độ geometry sau khi được làm phẳng 
+                                    * @param material : Chất liệu (đổ màu cho polygon)
+                                    */
+                                    highlightdc = viewer.entities.add({
+                                        polygon: {
+                                            hierarchy: Cesium.Cartesian3.fromDegreesArray(data.geometry.coordinates[0].flat()),
+                                            material: Cesium.Color.MAROON.withAlpha(0.8),
+                                        },
+                                    });
+                                });
+                            });
+                            ///End
+                        }
+                    }
+                });
+            }
+        }
+        var truyvanquyhoach = viewer.screenSpaceEventHandler;
+        truyvanquyhoach.setInputAction(function (movement) {
+            onLeftClick(movement)
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK, 2);
+        // end DiaChinh analysis
+
+        Sandcastle.finishedLoading();
+    }
+
+    /**
+     * * check loaded Cesium.js and startup all of code
+     * @param Cesium in Cesium.js
+     */
+    if (typeof Cesium !== 'undefined') {
+        window.startupCalled = true;
+        startup(Cesium);
+    }
+    /** Thay ảnh về logo VNU
+     * 
+    */
+    $("div.cesium-viewer-bottom").html('<div class="cesium-widget-credits"><div class="cesium-credit-logoContainer" style="display: inline;"><div style="display: inline;"><a href="https://www.vnu.edu.vn/home/" target="_blank"><img title="" src="https://www.huongnghiepviet.com/tuyen-sinh/images/truong/2086/dai-hoc-quoc-gia-ha-noi.png" width="10%"></a></div></div><div class="cesium-credit-textContainer" style="display: inline;"><div style="display: inline;"><a href="https://www.vnu.edu.vn/home/" target="_blank">VietNam National University, Hanoi</a></div></div><a class="cesium-credit-expand-link" style="display: inline;"></a></div>');
+</script>
+
+</html>

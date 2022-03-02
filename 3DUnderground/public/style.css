@@ -1,0 +1,1241 @@
+html, body {
+  color: black;
+  overflow: hidden;
+  margin: 0px;
+  padding: 0px;
+  height: 100%;
+}
+
+#cesiumContainer {
+  height: 100%;
+}
+
+#toolbar {
+  top: 0px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 35%;
+  width: 320px;
+  background: rgba(249, 250, 250, 0.788);
+  padding: 4px;
+  border-radius: 4px;
+  color: rgba(15, 15, 15, 0.8);
+  font-weight: bold;
+}
+
+.table-layer-list tr td:nth-child(2) {
+  white-space: inherit;
+}
+
+body {
+  background: rgb(0, 0, 0);
+}
+
+.cesium-infoBox-title {
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
+
+td.maintd {
+  padding-left: 2px;
+}
+
+div#dulieu_filter {
+  margin-bottom: 5px;
+}
+
+#toolbar input {
+  vertical-align: baseline;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.cesium-button {
+  background: #acacac;
+  border: 1px solid #e0e5e8;
+}
+
+svg.cesium-svgPath-svg {
+  background: black;
+}
+
+#toolbar table tr {
+  transform: translateY(0);
+  transition: transform 0.4s ease-out;
+}
+
+#toolbar table tr.up {
+  transform: translateY(30px);
+  transition: none;
+}
+
+#toolbar table tr.down {
+  transform: translateY(-30px);
+  transition: none;
+}
+
+button#switch:hover, button#switch.off:hover {
+  border-color: #fffefeec;
+}
+
+button#switch {
+  width: 20px;
+  cursor: pointer;
+  padding: 14.5px;
+  font-size: 21px;
+  border: solid 1px #ffffff;
+  color: #FFFFFF;
+  border-radius: 3px;
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAABmJLR0QA/wD/AP+gvaeTAAAEiUlEQVRYhdWYW0wcZRTHzwy7s+zIlst2Q9nCiwW2a6wxioBJm1hDYhpi6yO+1lsiITFqrKkPvpiY1Jp4aRMrtqYXBRVbhHqpWYsiAcpKWmpTiFyWdpfLssyy7GV2dnYuPixZjWHPzHy7GP0/zvmf8/3m++abb+YA/CdFEWcWFd9Tume/zdXMVrst9uoidhsAyHw0xQX4wGRsanT91oAsJP49LHOpw9naYW9+imasiE0Rk+Gx/qUrH6dCd7YWizIxzgMvVrYcpi0Y0N+lylLQc2ah/31VErcEy1RSvuuFk7a6R/SnZBWfuz77UXs6GtLpL9Lpszrrd7/axe50ETABAFNeVfHwgejksBTjCoZl3rbd9cpnTHkVGdPGSFZb2Z79Ye9lJcUXAIs2W+o6TluddfkwZclK7n2IG+sDRc4Xy9naYW86mD9TRkxFFUUXxaZGcBuNh82ljsqWw4ViymhHyzOW7TW4RwPL2dqh/12gU5TJvOOJ53EPhkVbWHvToYIibcjeeIi2sIjBhMTKHngcTwYAVRJDg92cty+5+AcAWJ319saDjn1tlIlBsmiLtez+x8Lj35Fg2VzNOJMYCc6ceJYPTGWvJHwTCd/E6nBPbXsnU1aJFd/9KIKFLSJb7UaiqiT+gykr3j85c/I5/LTBi2NY+H4JDXZvypQlCw19gRavJsQqKi5BotzYN0gUALhrfVhxq40QC0BFYsmlGTQXMpsgZ2lVQaIYlsRH8YFxURRWXOZjSBTPxLCsVbU4VjFqkBIRQixhZR6Jar5p8ZNUCPoIsfCHw7Gvja3JucnZGrdjbxtxcRTLP4lEKRNT2965KRlb465t76RMZiSdv3MLK47ETLaKB4+NAPrkqlI6NNTNXds4fNidrorGJx1723AmVZFvvNwgC3ESLAC4740+ZKWIFZ/5ber404hB48Nm/ebVgvJsKDLxE27QwOK82JuaUKoaHv8et2hgCctzvP924YgAAGLTXjG8gHs0sAAAP3EJFBr8XNOjjcWN9spJ7KAwpPR6aO36FU2bNpaS4leHvy4EEgDAys8XVFnStGljAUDQc9pQByGXZCG+8ssFPU5dWOLa8urIxfyQAABWBs7hx39WurAAYOnbE0oqmQcSSIn1oOeMTrPe1ogsJCgzY6tvJKWCwMVjsekxnWa9swUAyz+cEteWiJBACPpCv3bp9xvAUtLCQt97xpEAAPw9b+vZgFkZwAIAbrSXv4t9kGyq6OTw+u8DhlKMYYGqzJ8/aui+FTF5t+tNY6Pof+SzSkdXaabYVtug0x+4dNzoVIHh2QIAgMXLHyYXp/U4E/M3V66eJRiCBEuVxPnzR1Wtjp4qifPnXte0bSrDi5hROrJMm8x41zlw6Z3IhIesPslsZbTY/0F8djxXNHp7KOj5lLg4OZaqyHOfvLTpX6gU43xnXwP0dx4X4SJmJAtxIeiraGgF6q9fFVWRZ0+1J3M3c7YcCwCE4BxQYKtvyl5Z6H2XG+3Ns2y+WAAQm/YWV+3KNO7Xbvzo//Kt/GsWRrSFdR/pcR/5SrPX+v/Wn/6yv03AKkzKAAAAAElFTkSuQmCC');
+  background-position: center;
+  border-color: #0e0d0d;
+  background-size: 100%;
+}
+
+button#switch.off {
+  background-color: #FFFFFF;
+  /*  */
+  color: #000000;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAABmJLR0QA/wD/AP+gvaeTAAADhElEQVRYhdWZzys8YRzHP7toyEMSrckWiRJb5qRxdHDR4uZC+QecODhqN22uTBrsgauLkhykRFhLIuVADqJJbX6NdkYzu2t9D1PyxX5mPfPs+n5f12fen+f1eWaenR8L8E/iok6WlZX5/f7Ozk5BEOrr6ysqKgBAVdWrq6vT09PNzc21tbV4PM5O1Q6e52VZ1nX9DUXX9XA43NjYmHMhjuOCwaCmabjQRxKJxOTkJMdxuXKqqqra3t7OXugjkUikpqaGvZPP57u5uaFzsri+vvb5fCydPB6PQ6d3M4/Hw8apuLg4Eok4d7LY29tjc50Fg0FWThahUMipE8/zP9p32WCaZkNDgyMtWZbZOlnMzc3ROxFC4vF4LrQ0TSOEIFO7kbGenh48DACmaU5PT4uiSAghhIiiKEmSaZp4qrS0tLu7Gz8mI/Pz83jTiqK0tbV9DQqCoCgKnp2dnaXUOjw8ROoahvGt07uZYRhIPBqNUmrd3d0hdaempvC4JElIPBaLUWqZponUbW9vx+OiKOKLTamFnwXb3UAIQeIvLy9IFtuJqqrSdPNe2k1fHEs+PT0hoy0tLbgWfsDj4yOl1uXlJTI6ODiIaw0MDCCjFxcXeDwjoVAIv2YFQciUFQQB3zGBQIBSq7+/H6n79vamKMq3Ztn8nPb29lJqVVdXv76+4tVN05Qk6f3m09HRYd188FQymSwvL6fUAoCTkxN8Ajp2dnbwebFLHgBWV1fpe8rMysqKo3xzczPzpUqn03V1dU47Oz4+Zqu1tbVlO6nNSQSAcDjstLO/kWWZQRVCiKqqrJbq9va2qKjIdlL71dI0bWFhgUF/AAAwMzOTTCbZ1PJ6vfjTRJY8Pz9bH3ZssV8tAFAUZXFx0VlrAACSJDl8KvlMbW2twxfGh4eHyspKlk4WgUDAidbw8DB7JwAoKSmh/kByfn6ezQakZGhoiE7L7/fnygkA3G730dHRT502NjZy6GQhCEIikcjeSdf1pqamnGuB3VPrJ0ZGRvLhBAAcx52dnWXjdHBwUFBQkCctABBFMZVK4U6GYbS2tubPyWJiYgLXGh0dzbcTABQWFu7u7mZyWl9fx19fc4jX672/v//qFIvFeJ7/HSeLvr6+dDr90SmVSnV1df2mk8X4+PhHrbGxsd82AgAAl8u1tLRkOS0vL7tc9P+6MYYQEo1G9/f3bb8u/d/8AW5fDNt6HfcwAAAAAElFTkSuQmCC');
+  background-size: 100%;
+}
+
+button.cesium-button.cesium-toolbar-button {
+  background-image: url('https://cesium.com/downloads/cesiumjs/releases/1.86/Build/Cesium/Widgets/Images/ImageryProviders/naturalEarthII.png');
+  background-size: cover;
+}
+
+.cesium-viewer-toolbar {
+  right: 60px;
+}
+
+td#range {
+  width: 3rem;
+}
+
+input#range {
+  width: 90%;
+}
+
+p#text1 {
+  font-size: 13px;
+  text-align: center;
+}
+
+div#dulieu_wrapper {
+  color: black;
+  border-radius: 5px;
+  position: fixed;
+  width: 36%;
+  bottom: 28px;
+  left: 5px;
+  padding: 5px 5px 5px 5px;
+  background: rgb(255 255 255 / 90%);
+  height: 57.5%;
+  opacity: 0.85;
+}
+
+.dataTables_wrapper .dataTables_scroll {
+  clear: both;
+  height: 62%;
+}
+
+.dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody {
+  height: 100% !important;
+}
+
+div.dataTables_wrapper div.dataTables_filter input {
+  border-radius: 6px;
+  margin-left: 0.5em;
+  display: inline-block;
+  width: auto;
+  background: white;
+}
+
+div.dataTables_wrapper div.dataTables_length label {
+  padding-left: 5px;
+  font-weight: normal;
+  text-align: left;
+  white-space: nowrap;
+}
+
+div#dulieu_info {
+  white-space: break-spaces;
+  padding-top: 15px;
+  padding-left: 5px;
+  margin-bottom: 8px;
+  position: absolute;
+  bottom: 5px;
+  left: 16px;
+  font-size: 100%;
+}
+
+.cesium-infoBox-title {
+  background: #ffffff80!important;
+  color: black;
+}
+
+.cesium-infoBox-description {
+  background: rgb(255 255 255 / 90%)!important;
+}
+
+.cesium-infoBox.cesium-infoBox-visible {
+  background: rgb(255 255 255 / 75%);
+  box-shadow: none;
+}
+
+.cesium-infoBox-defaultTable tr:nth-child(odd) {
+  background-color: #f9f9f9!important;
+  color: black;
+  font-size: 14px;
+}
+
+.cesium-infoBox-defaultTable tr:nth-child(even) {
+  background-color: #fff;
+  color: black;
+  font-size: 14px;
+}
+.cesium-infoBox.cesium-infoBox-bodyless {
+  display: none;
+}
+.cesium-infoBox-defaultTable td {
+  background: #ffffffd9!important;
+  color: black!important;
+}
+
+.cesium-infoBox-description * {
+  max-width: 100%;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+div#dulieu_paginate {
+  margin-top: 5px;
+  position: absolute;
+  bottom: 5px;
+  right: 20px;
+  font-size: 90%;
+}
+
+tr#tieude {
+  background: white;
+}
+
+th.sorting {
+  border: 1px solid #ccc;
+}
+
+th.sorting_asc {
+  border: 1px solid #ccc;
+}
+
+table.dataTable.display tbody tr:first-child td {
+  border-top: none;
+  border: 1px solid #ccc;
+}
+
+table.dataTable.display tbody td {
+  border: 1px solid #ccc;
+}
+
+button#close {
+  float: left;
+  position: absolute;
+  top: 9px;
+  left: 5px;
+}
+
+span {
+  font-family: auto;
+}
+
+select {
+  width: 100%;
+}
+
+.style-1::-webkit-scrollbar-track {
+  /* 
+    https://stackoverflow.com/questions/55586658/fix-warning-also-define-the-standard-property-box-shadow-for-compatibility
+    add the standard style rule (box-shadow) in addition to the vendor prefixed version (-webkit-box-shadow)
+  */
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #F5F5F5;
+  border-radius: 10px;
+}
+
+.style-1::-webkit-scrollbar {
+  width: 10px;
+}
+
+.style-1::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0.44, rgb(112, 128, 143)), color-stop(0.72, rgb(61, 80, 104)), color-stop(0.86, rgb(36, 40, 54)));
+}
+
+button.cesium-button.cesium-infoBox-camera {
+  display: none;
+}
+
+.check {
+  display: none;
+}
+
+/* Dành cho điện thoại */
+
+@media all and (max-width: 645px) and (orientation:portrait) {
+  div#dulieu_wrapper {
+    width: 72%;
+    height: 380px;
+  }
+  .cesium-baseLayerPicker-dropDown.cesium-baseLayerPicker-dropDown-visible {
+    height: 250px!important;
+    width: 250px!important;
+}
+.cesium-baseLayerPicker-dropDown {
+  width: 250px!important;
+  height: 250px!important;
+}
+  button#close {
+    float: left;
+    position: absolute;
+    top: 13px;
+    left: 5px;
+  }
+.cesium-viewer-geocoderContainer .cesium-geocoder-input-wide, .cesium-viewer-geocoderContainer .cesium-geocoder-input:focus, .cesium-viewer-geocoderContainer:hover .cesium-geocoder-input {
+  padding-left: 4px;
+  width: 155px!important;
+}
+  .dataTables_wrapper .dataTables_scroll {
+    height: 40%;
+  }
+  div#dulieu_info {
+    display: none;
+  }
+  div#dulieu_paginate {
+    margin-top: 5px;
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+    font-size: 85%;
+  }
+  div#showtoggle {
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    bottom: 80px;
+    right: 20px;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-on.png');
+    background-position: center;
+    background-size: 100%;
+  }
+  div#showtoggle.off {
+    color: #000000;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-off.png');
+    background-size: 100%;
+  }
+  .dong1 {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    align-items: center;
+    justify-content: center;
+  }
+  .toggle {
+    width: 55px;
+    height: 290px;
+    padding: 12px;
+    font-size: 21px;
+    /* border: solid 1px #ffffff; */
+    color: #FFFFFF;
+    /* border-radius: 3px; */
+    position: absolute;
+    bottom: 140px;
+    right: 8px;
+    overflow: scroll;
+  }
+  #switch1 {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 100px;
+    right: 15px;
+  }
+  #switch1.off {
+    color: white;
+    background-size: 100%;
+  }
+  #congcu {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 160px;
+    right: 15px;
+  }
+  #congcu.off {
+    color: white;
+    background-size: 100%;
+  }
+  #dodientich {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 190px;
+    right: 15px;
+  }
+  #dodientich.off {
+    color: white;
+    background-size: 100%;
+  }
+  #thongtin {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 60px;
+    right: 15px;
+  }
+  #thongtin.off {
+    color: white;
+    background-size: 100%;
+  }
+  .check {
+    float: right;
+    max-width: 362px;
+    width: 50%;
+    max-height: 100px;
+    height: 6%;
+    background-color: #f8f8f8;
+    position: fixed;
+    right: 5px;
+    top: 95px;
+  }
+  #toolbar {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 25%;
+    width: 63%;
+    max-width: 250px;
+    background: rgba(249, 250, 250, 0.788);
+    padding: 4px;
+    border-radius: 4px;
+    color: rgba(15, 15, 15, 0.8);
+    font-weight: bold;
+    top: 40px;
+  }
+  div#toolbar {
+    display: none;
+  }
+  label {
+    color: black;
+    font-size: 13px;
+  }
+  .cesium-infoBox.cesium-infoBox-visible {
+    top: 35%;
+    background: rgb(255 255 255 / 75%);
+    box-shadow: none;
+    height: 60%;
+    width: 230px;
+    position: absolute;
+    left: 5px;
+    transform: translate(0, 0);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .5s ease-out, transform .5s ease-out;
+    border-radius: 5px;
+  }
+  div.dataTables_wrapper div.dataTables_filter input {
+    border-radius: 6px;
+    margin-left: 0.5em;
+    display: inline-block;
+    width: 60%;
+    background: white;
+  }
+  div#dulieu_filter {
+    width: 72%;
+    margin-bottom: 5px;
+    float: right;
+  }
+  iframe.cesium-infoBox-iframe {
+    height: 82%!important;
+    overflow: auto;
+  }
+}
+@media all and (max-width: 645px) and (orientation:landscape) {
+  div#dulieu_wrapper {
+    width: 72%;
+    height: 72%;
+  }
+  .cesium-click-navigation-help-visible {
+    height: 150px!important;
+    overflow: auto;
+}
+.cesium-touch-navigation-help-visible {
+  height: 150px;
+  overflow: auto;
+}
+.cesium-baseLayerPicker-dropDown.cesium-baseLayerPicker-dropDown-visible {
+  height: 150px;
+}
+.cesium-baseLayerPicker-dropDown {
+  height: 150px;
+}
+  .dataTables_wrapper .dataTables_scroll {
+    height: 25%;
+  }
+  div#dulieu_info {
+    display: none;
+  }
+  div#dulieu_paginate {
+    margin-top: 5px;
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+    font-size: 85%;
+  }
+  div#showtoggle {
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    bottom: 25px;
+    right: 20px;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-on.png');
+    background-position: center;
+    background-size: 100%;
+  }
+  div#showtoggle.off {
+    color: #000000;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-off.png');
+    background-size: 100%;
+  }
+  .dong1 {
+    height: 80px;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    align-items: center;
+    justify-content: center;
+  }
+  .toggle {
+    width: 55px;
+    height: 42%;
+    padding: 12px;
+    font-size: 21px;
+    color: #FFFFFF;
+    position: absolute;
+    bottom: 77px;
+    right: 8px;
+    overflow: scroll;
+  }
+  #switch1 {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 100px;
+    right: 15px;
+  }
+  #switch1.off {
+    color: white;
+    background-size: 100%;
+  }
+  #congcu {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 160px;
+    right: 15px;
+  }
+  #congcu.off {
+    color: white;
+    background-size: 100%;
+  }
+  #dodientich {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 190px;
+    right: 15px;
+  }
+  #dodientich.off {
+    color: white;
+    background-size: 100%;
+  }
+  #thongtin {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 60px;
+    right: 15px;
+  }
+  #thongtin.off {
+    color: white;
+    background-size: 100%;
+  }
+  .check {
+    float: right;
+    max-width: 362px;
+    width: 50%;
+    max-height: 100px;
+    height: 6%;
+    background-color: #f8f8f8;
+    position: fixed;
+    right: 5px;
+    top: 95px;
+  }
+  #toolbar {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 40%;
+    width: 63%;
+    max-width: 250px;
+    background: rgba(249, 250, 250, 0.788);
+    padding: 4px;
+    border-radius: 4px;
+    color: rgba(15, 15, 15, 0.8);
+    font-weight: bold;
+  }
+  div#toolbar {
+    display: none;
+  }
+  label {
+    color: black;
+    font-size: 13px;
+  }
+  .cesium-infoBox.cesium-infoBox-visible {
+    top: 35%;
+    background: rgb(255 255 255 / 75%);
+    box-shadow: none;
+    height: 60%;
+    width: 230px;
+    position: absolute;
+    left: 5px;
+    transform: translate(0, 0);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .5s ease-out, transform .5s ease-out;
+    border-radius: 5px;
+  }
+  div.dataTables_wrapper div.dataTables_filter input {
+    border-radius: 6px;
+    margin-left: 0.5em;
+    display: inline-block;
+    width: 40%;
+    background: white;
+  }
+  div#dulieu_filter {
+    width: 100%;
+    margin-bottom: 5px;
+    float: none;
+    margin-top: 1px!important;
+  }
+  iframe.cesium-infoBox-iframe {
+    height: 72%!important;
+    overflow: auto;
+  }
+}
+/* Dành cho máy tính bảng nhỏ và điện thoại kích thước trung bình */
+
+@media all and (max-width: 768px) and (min-width: 645px) and (orientation: portrait)  {
+  div#dulieu_wrapper {
+    width: 70%;
+  }
+  iframe.cesium-infoBox-iframe {
+    height: 510px!important;
+    overflow: auto;
+  }
+  div#dulieu_info {
+    display: none;
+  }
+  .dong1 {
+    display: grid;
+    justify-items: center;
+  }
+  div#showtoggle {
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    bottom: 80px;
+    right: 44px;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-on.png');
+    background-position: center;
+    background-size: 100%;
+  }
+  div#showtoggle.off {
+    color: #000000;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-off.png');
+    background-size: 100%;
+  }
+  #switch1 {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 100px;
+    right: 15px;
+  }
+  #switch1.off {
+    color: white;
+    background-size: 100%;
+  }
+  #congcu {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 160px;
+    right: 15px;
+  }
+  #congcu.off {
+    color: white;
+    background-size: 100%;
+  }
+  #dodientich {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 190px;
+    right: 15px;
+  }
+  #dodientich.off {
+    color: white;
+    background-size: 100%;
+  }
+  #thongtin {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 60px;
+    right: 15px;
+  }
+  #thongtin.off {
+    color: white;
+    background-size: 100%;
+  }
+  .toggle {
+    width: 105px;
+    height: 290px;
+    padding: 12px;
+    font-size: 21px;
+    color: #FFFFFF;
+    position: absolute;
+    bottom: 140px;
+    right: 8px;
+  }
+  .cesium-infoBox.cesium-infoBox-visible {
+    top: 230px;
+    position: absolute;
+    left: 5px;
+    transform: translate(0, 30px);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .5s ease-out, transform .5s ease-out;
+    border-radius: 5px;
+  }
+  div.dataTables_wrapper div.dataTables_filter input {
+    border-radius: 6px;
+    margin-left: 0.5em;
+    display: inline-block;
+    width: 90px;
+    background: white;
+  }
+  div#toolbar {
+    display: none;
+  }
+  label {
+    color: black;
+    font-size: 13px;
+  }
+  .check {
+    top: 95px;
+    right: 7px;
+    float: right;
+    max-width: 362px;
+    width: 129 px;
+    height: 3%;
+    background-color: #f8f8f8;
+    position: fixed;
+  }
+  #toolbar {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 25%;
+    width: 250px;
+    background: rgba(249, 250, 250, 0.788);
+    padding: 4px;
+    border-radius: 4px;
+    color: rgba(15, 15, 15, 0.8);
+    font-weight: bold;
+  }
+}
+
+@media all and (max-width: 768px) and (min-width: 645px) and (orientation: landscape)  {
+  div#dulieu_wrapper {
+    height: 72%;
+    width: 70%;
+  }
+  .dataTables_wrapper .dataTables_scroll {
+    height: 28%;
+  }
+  iframe.cesium-infoBox-iframe {
+    height: 77%!important;
+    overflow: auto;
+  }
+  div#dulieu_info {
+    display: none;
+  }
+  .dong1 {
+    height: 70px;
+    display: grid;
+    justify-items: center;
+  }
+  div#showtoggle {
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    bottom: 28px;
+    right: 44px;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-on.png');
+    background-position: center;
+    background-size: 100%;
+  }
+  div#showtoggle.off {
+    color: #000000;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-off.png');
+    background-size: 100%;
+  }
+  #switch1 {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 100px;
+    right: 15px;
+  }
+  #switch1.off {
+    color: white;
+    background-size: 100%;
+  }
+  #congcu {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 160px;
+    right: 15px;
+  }
+  #congcu.off {
+    color: white;
+    background-size: 100%;
+  }
+  #dodientich {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 190px;
+    right: 15px;
+  }
+  #dodientich.off {
+    color: white;
+    background-size: 100%;
+  }
+  #thongtin {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 60px;
+    right: 15px;
+  }
+  #thongtin.off {
+    color: white;
+    background-size: 100%;
+  }
+  .toggle {
+    overflow: auto;
+    width: 105px;
+    height: 46%;
+    padding: 12px;
+    font-size: 21px;
+    color: #FFFFFF;
+    position: absolute;
+    bottom: 92px;
+    right: 8px;
+  }
+  .cesium-infoBox.cesium-infoBox-visible {
+    top: 17%;
+    background: rgb(255 255 255 / 75%);
+    box-shadow: none;
+    height: 73%;
+    width: 230px;
+    position: absolute;
+    left: 5px;
+    transform: translate(0, 0);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .5s ease-out, transform .5s ease-out;
+    border-radius: 5px;
+    
+  }
+  div.dataTables_wrapper div.dataTables_filter input {
+    border-radius: 6px;
+    margin-left: 0.5em;
+    display: inline-block;
+    width: 90px;
+    background: white;
+  }
+  div#toolbar {
+    display: none;
+  }
+  label {
+    color: black;
+    font-size: 13px;
+  }
+  .check {
+    top: 95px;
+    right: 7px;
+    float: right;
+    max-width: 362px;
+    width: 129 px;
+    height: 3%;
+    background-color: #f8f8f8;
+    position: fixed;
+  }
+  #toolbar {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 45%;
+    width: 250px;
+    background: rgba(249, 250, 250, 0.788);
+    padding: 4px;
+    border-radius: 4px;
+    color: rgba(15, 15, 15, 0.8);
+    font-weight: bold;
+  }
+}
+
+/* Dành cho máy tính bảng cỡ to, theo chiều dọc */
+
+@media all and (max-device-width: 1024px)and (min-device-width: 769px) and (orientation:portrait) {
+  div#dulieu_wrapper {
+    width: 60%;
+  }
+  iframe.cesium-infoBox-iframe {
+    height: 530px!important;
+    overflow: auto;
+  }
+  .dong1 {
+    height: 90px;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+  }
+  .dataTables_wrapper .dataTables_scroll {
+    height: 68%;
+  }
+  div#showtoggle {
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    bottom: 80px;
+    right: 44px;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-on.png');
+    background-position: center;
+    background-size: 100%;
+  }
+  div#showtoggle.off {
+    color: #000000;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-off.png');
+    background-size: 100%;
+  }
+  #switch1 {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 100px;
+    right: 15px;
+  }
+  #switch1.off {
+    color: white;
+    background-size: 100%;
+  }
+  #congcu {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 160px;
+    right: 15px;
+  }
+  #congcu.off {
+    color: white;
+    background-size: 100%;
+  }
+  #dodientich {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 190px;
+    right: 15px;
+  }
+  #dodientich.off {
+    color: white;
+    background-size: 100%;
+  }
+  #thongtin {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 60px;
+    right: 15px;
+  }
+  #thongtin.off {
+    color: white;
+    background-size: 100%;
+  }
+  .toggle {
+    width: 105px;
+    height: 340px;
+    padding: 12px;
+    font-size: 21px;
+    color: #FFFFFF;
+    position: absolute;
+    bottom: 140px;
+    right: 8px;
+  }
+  .cesium-infoBox.cesium-infoBox-visible {
+    position: absolute;
+    right: 5px;
+    transform: translate(0, 30px);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .5s ease-out, transform .5s ease-out;
+    border-radius: 5px;
+  }
+  div.dataTables_wrapper div.dataTables_filter input {
+    border-radius: 6px;
+    margin-left: 0.5em;
+    display: inline-block;
+    width: 90px;
+    background: white;
+  }
+  div#toolbar {
+    display: none;
+  }
+  label {
+    color: black;
+    font-size: 13px;
+  }
+  .check {
+    top: 95px;
+    right: 7px;
+    float: right;
+    max-width: 362px;
+    width: 129 px;
+    height: 3%;
+    background-color: #f8f8f8;
+    position: fixed;
+  }
+  #toolbar {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 25%;
+    width: 320px;
+    background: rgba(249, 250, 250, 0.788);
+    padding: 4px;
+    border-radius: 4px;
+    color: rgba(15, 15, 15, 0.8);
+    font-weight: bold;
+  }
+}
+
+/* Dành cho máy tính bảng , theo chiều ngang */
+
+@media all and (max-device-width: 1000px)and (min-device-width: 769px) and (orientation:landscape) {
+  .dataTables_wrapper .dataTables_scroll {
+    height: 35%!important;
+  }
+}
+/* Dành cho máy tính bảng cỡ to, theo chiều ngang */
+@media all and (max-device-width: 1025px)and (min-device-width: 769px) and (orientation:landscape) {
+  div#dulieu_wrapper {
+    width: 60%;
+    height: 75%;
+  }
+  div#dulieu_info {
+ display:none;
+}
+.cesium-click-navigation-help-visible {
+  height: 236px;
+  overflow: scroll;
+  display: block;
+}
+  iframe.cesium-infoBox-iframe {
+    height: 530px!important;
+    overflow: auto;
+  }
+  .dong1 {
+    height: 90px;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+  }
+  .dataTables_wrapper .dataTables_scroll {
+    height: 60%;
+  }
+  div#showtoggle {
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    bottom: 40px;
+    right: 44px;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-on.png');
+    background-position: center;
+    background-size: 100%;
+  }
+  div#showtoggle.off {
+    color: #000000;
+    background-image: url('https://img.icons8.com/fluency/96/000000/toggle-off.png');
+    background-size: 100%;
+  }
+  #switch1 {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 100px;
+    right: 15px;
+  }
+  #switch1.off {
+    color: white;
+    background-size: 100%;
+  }
+  #congcu {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 160px;
+    right: 15px;
+  }
+  #congcu.off {
+    color: white;
+    background-size: 100%;
+  }
+  #dodientich {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 190px;
+    right: 15px;
+  }
+  #dodientich.off {
+    color: white;
+    background-size: 100%;
+  }
+  #thongtin {
+    width: 1.33em;
+    height: 1.33em;
+    font-size: 21px;
+    color: #1398ff;
+    bottom: 60px;
+    right: 15px;
+  }
+  #thongtin.off {
+    color: white;
+    background-size: 100%;
+  }
+  .toggle {
+    width: 105px;
+    height: 50%;
+    padding: 12px;
+    font-size: 21px;
+    color: #FFFFFF;
+    position: absolute;
+    bottom: 100px;
+    right: 8px;
+    overflow: auto;
+  }
+  .cesium-infoBox.cesium-infoBox-visible {
+    top: 15px;
+    position: absolute;
+    left: 5px;
+    transform: translate(0, 30px);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .5s ease-out, transform .5s ease-out;
+    border-radius: 5px;
+  }
+  div.dataTables_wrapper div.dataTables_filter input {
+    border-radius: 6px;
+    margin-left: 0.5em;
+    display: inline-block;
+    width: 90px;
+    background: white;
+  }
+  div#toolbar {
+    display: none;
+  }
+  label {
+    color: black;
+    font-size: 13px;
+  }
+  .check {
+    top: 95px;
+    right: 7px;
+    float: right;
+    max-width: 362px;
+    width: 129 px;
+    height: 3%;
+    background-color: #f8f8f8;
+    position: fixed;
+  }
+  #toolbar {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 40%;
+    width: 300px;
+    background: rgba(249, 250, 250, 0.788);
+    padding: 4px;
+    border-radius: 4px;
+    color: rgba(15, 15, 15, 0.8);
+    font-weight: bold;
+  }
+}
+@media all and (max-width: 344px)  {
+  .check {
+    float: right;
+    max-width: 362px;
+    width: 50%;
+    max-height: 100px;
+    height: 9%;
+    background-color: #f8f8f8;
+    position: fixed;
+    right: 5px;
+    top: 95px;
+  }
+  .cesium-infoBox.cesium-infoBox-visible {
+    top: 160px;
+    width: 65%;
+  }
+  .cesium-viewer-geocoderContainer .cesium-geocoder-input-wide, .cesium-viewer-geocoderContainer .cesium-geocoder-input:focus, .cesium-viewer-geocoderContainer:hover .cesium-geocoder-input {
+    padding-left: 4px;
+    width: 120px!important;
+  }
+}
